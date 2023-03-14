@@ -29,3 +29,6 @@ def write_Phone(positioanlData):
 #Calls functions for testing purposes
 start_server()
 write_Phone(positionalData)
+write_Phone(positionalData)
+write_Phone(positionalData)
+
