@@ -31,11 +31,8 @@ import time
 """ LIMIT SWITCH SETUP """
 LS1 = Pin(4, Pin.IN, Pin.PULL_UP)
 LS2 = Pin(16, Pin.IN, Pin.PULL_UP)
-LS3 = Pin(17, Pin.IN, Pin.PULL_UP) # not setup for hall effect
-LS4 = Pin(21, Pin.IN, Pin.PULL_UP)# not setup for hall effect
-
-
-
+startSensor = Pin(17, Pin.IN, Pin.PULL_UP) # not setup for hall effect
+endSensor = Pin(21, Pin.IN, Pin.PULL_UP)# not setup for hall effect
 
 
 """ GANTRY (HORIZONTAL) MOTOR SETUP """
@@ -100,10 +97,23 @@ def checkLimLeft():
         return False
     
 def checkLimRight():
-    if LS2 .value() == 0:
+    if LS2.value() == 0:
         return True
     else:
         return False
+    
+def checkStart():
+    if startSensor.value() == 0:
+        return True
+    else:
+        return False
+    
+def checkEnd():
+    if endSensor.value() == 0:
+        return True
+    else:
+        return False
+    
     
 def moveMotorRight(speed):
     motor.duty(int(0))
@@ -195,7 +205,8 @@ while True:
     # print('Position = ', position)
     
     
-    # homing sequence + move to start 
+    # homing sequence + move to start
+    homed = True # cop out to avoid homing at start *for debugging)
     if not homed:
         homed = homingFunction()
         farRight = horizontalPosition(val_old)
@@ -210,4 +221,9 @@ while True:
     manualMovement() # currently controls horizontal movement, NOT Y MOVEMENT *yet
     
     
+
+    if checkStart():
+        print('Start sensor TRIGGERED')
+    else:
+        print('Start sensor NOT triggered')
     
