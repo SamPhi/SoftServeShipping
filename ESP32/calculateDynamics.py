@@ -1,8 +1,6 @@
 import _thread
-from sympy import *
 from time import sleep
 from machine import Pin, PWM, Timer, ADC
-import numpy as np
 
 """ LIMIT SWITCH SETUP """
 LS1 = Pin(4, Pin.IN, Pin.PULL_UP)
@@ -30,11 +28,6 @@ def calculateDynamics(pos_x,pos_x_last,t_last,checkWatchDog,x_des):
     if checkWatchDog == False:
         dx = pos_x - pos_x_last/t_last
         u = Kp*x_des - (Kp*pos_x + dx)
-        if u < 0:
-            moveMotorLeft(u*1000) #assuming ~1000 is max PWM
-        elif u > 0:
-            moveMotorRight(u*1000) #assuming ~1000 is max PWM
-        else:
-            return
+        return u
     if checkWatchDog == True:
         return
