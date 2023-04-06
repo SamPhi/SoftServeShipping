@@ -41,3 +41,6 @@ if __name__ == '__main__':
         time.sleep(3)
         phoneData = receive_data(sock)
         print(phoneData)
+        time.sleep(3)
+        finished = True
+        send_data(sock, x_pos, y_pos, homed, finished, theta)
