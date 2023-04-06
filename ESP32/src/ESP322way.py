@@ -26,6 +26,12 @@ def send_data(sock, x_pos,y_pos,homed,finished,theta):
 def receive_data(sock):
     # Receive data
     data = sock.recv(1024)
+    #if no new data, return (hence values stay same as before
+    if not data:
+        return
+    #If recieved multiple data packets since last check, only take the most recent
+    if len(data) != 56:
+        data = data[-56:]
     data = json.loads(data.decode())
     x_des = data.get("x_des")
     y_des = data.get("y_des")
