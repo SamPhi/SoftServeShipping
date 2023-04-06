@@ -1,4 +1,11 @@
-import socket
+import socket, json,time
+
+x_pos = 50
+y_pos = 1000
+homed = True
+finished = False
+theta = 12
+positionalData = [x_pos,y_pos,homed,finished,theta]
 
 def start_server():
     # Create a TCP/IP socket
@@ -9,20 +16,28 @@ def start_server():
     sock.connect(server_address)
     return sock
 
-def send_data(sock, data):
+def send_data(sock, x_pos,y_pos,homed,finished,theta):
     # Send data
-    message = data.encode()
-    print('sending {!r}'.format(message))
+    positionalDataArr = json.dumps({"x_pos": x_pos, "y_pos": y_pos, "homed": homed, "finished": finished, "theta": theta})
+    message = positionalDataArr.encode()
+    #print('sending {!r}'.format(message))
     sock.sendall(message)
 
 def receive_data(sock):
     # Receive data
     data = sock.recv(1024)
-    print('received {!r}'.format(data.decode()))
+    data = json.loads(data.decode())
+    x_des = data.get("x_des")
+    y_des = data.get("y_des")
+    state = data.get("state")
+    cancel = data.get("cancel")
+    phoneData = [x_des,y_des,state,cancel]
+    return phoneData
 
 if __name__ == '__main__':
     sock = start_server()
     while True:
-        data = "test"
-        send_data(sock, data)
-        receive_data(sock)
+        send_data(sock, x_pos,y_pos,homed,finished,theta)
+        time.sleep(3)
+        phoneData = receive_data(sock)
+        print(phoneData)
