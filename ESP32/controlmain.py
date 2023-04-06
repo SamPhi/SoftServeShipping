@@ -63,6 +63,7 @@ def horizontalPosition(val_old):
     val_new = r.value()
     if val_old != val_new:
         val_old = val_new
+        print('result =', val_new)    
         
     return val_new
 
@@ -94,10 +95,12 @@ def checkEnd():
 def moveMotorRight(speed):
     motor.duty(int(0))
     rev_motor.duty(int(speed))
+    print('right')
     
 def moveMotorLeft(speed):
     motor.duty(int(speed))
     rev_motor.duty(int(0))
+    print('left')
 
 homed = False
 
@@ -142,39 +145,8 @@ def moveToPosition(xcoord):
             positioned = True
     return True
 
-def manualMovement():
-    x_value = xStick.read() - centerJoy - 10
-    y_value = yStick.read() - centerJoy - 10
-    speed = slope*x_value*10
-    buttonState = button.value()
-    
-    rightHit = checkLimRight()
-    leftHit = checkLimLeft()
-
-    if speed > 1023:
-        speed = 1023
-    if speed < -1023:
-        speed = -1023
-
-    if x_value >= deadBand and not rightHit:
-        # run one direction
-        motor.duty(int(0))
-        rev_motor.duty(int(speed))
-        # print("Running Right")
-        # print(speed)
-    elif x_value <= -deadBand and not leftHit:
-        # run the other direction
-        motor.duty(int(-speed))
-        rev_motor.duty(int(0))
-        # print("Running Left")
-        # print(speed)
-    else:
-        motor.duty(int(0))
-        rev_motor.duty(int(0))
-        # print("Stopped")
-
 def checkWatchDog(): #take in 2x1 vector of states, return T if hit
-    if LS1 or LS2 == True:
+    if LS1.value() or LS2.value() == True:
         return True
     else:
         return False
@@ -183,42 +155,30 @@ def calculateDynamics(pos_x,pos_x_last,t_last,x_des):
     Kp = 0.3
     dx = pos_x - pos_x_last/t_last
     u = Kp*x_des - (Kp*pos_x + dx)
+    print(u)
     return u
 
 def writeMotors(PWM_x):
+    print(checkWatchDog())
     if checkWatchDog() == False:
         if PWM_x < 0:
-                moveMotorRight(abs(PWM_x)*1000) #assuming ~1000 is max PWM
+            moveMotorRight(min(abs(PWM_x)*1000,1023)) #assuming ~1000 is max PWM
+            print(PWM_x, ' right')
         elif PWM_x > 0:
-            moveMotorRight(abs(PWM_x)*1000) #assuming ~1000 is max PWM
+            moveMotorLeft(min(abs(PWM_x)*1000, 1023)) #assuming ~1000 is max PWM
+            print(PWM_x, ' left')
         else:
             return
     return
 
 """ RUNNING LOOP """
-
+r.set(value=0)
 while True:
     position = horizontalPosition(val_old)
-    # print('Position = ', position)
-    
-    # homing sequence + move to start
-    homed = True # cop out to avoid homing at start *for debugging)
-    if not homed:
-        homed = homingFunction()
-        farRight = horizontalPosition(val_old)
-        print('Far Right position is',farRight)
-        print('Moving to start')
-        moveToPosition(int(farRight*.125))
-        print('Successfully moved to start!!!')
     
     looptime = 50
     time.sleep_ms(looptime)
     # time.sleep_us(100)
+    moveMotorLeft(500)
+    #writeMotors(calculateDynamics(position,val_old,looptime/1000,0.0))
 
-    
-    writeMotors(calculateDynamics(position,val_old,looptime/1000,0))
-
-    if checkStart():
-        print('Start sensor TRIGGERED')
-    else:
-        print('Start sensor NOT triggered')
