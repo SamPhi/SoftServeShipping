@@ -270,6 +270,11 @@ def send_data(sock, x_des, y_des, state, cancel):
 def receive_data(sock,game):
     # Receive data
     data = sock.recv(1024)
+    if not data:
+        return
+    # If recieved multiple data packets since last check, only take the most recent
+    if len(data) != 75:
+        data = data[-75:]
     data = json.loads(data.decode())
     game.x_pos = data.get("x_pos")
     game.y_pos = data.get("y_pos")
