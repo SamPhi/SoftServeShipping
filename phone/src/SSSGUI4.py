@@ -131,6 +131,8 @@ class gamePlayer(tk.Tk):
             return "thankyou"
         if newState == "thankyou" and self.homed == True:
             return "select"
+        else:
+            return newState
 
 
 
@@ -250,7 +252,7 @@ def start_server():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Bind the socket to a specific address and port
-    server_address = ('192.168.43.1', 12345)
+    server_address = ('127.0.0.1', 12345) #Should be:'192.168.43.1', 12345
     print('starting up on {} port {}'.format(*server_address))
     sock.bind(server_address)
     # Listen for incoming connections
@@ -269,12 +271,13 @@ def send_data(sock, x_des, y_des, state, cancel):
 
 def receive_data(sock,game):
     # Receive data
+    sock.settimeout(1)
     data = sock.recv(1024)
     if not data:
         return
-    # If recieved multiple data packets since last check, only take the most recent
-    if len(data) != 75:
-        data = data[-75:]
+    # If recieved multiple data packets since last check, return
+    if "}{" in data.decode():
+        return
     data = json.loads(data.decode())
     game.x_pos = data.get("x_pos")
     game.y_pos = data.get("y_pos")
@@ -292,5 +295,10 @@ if __name__ == "__main__":
         newState = game.newState
         game.updater(newState)
         game.update()
+        print("Starting send data")
         send_data(sock, game.x_des, game.y_des, game.state, game.cancel)
+        print("Finished send data")
+        print("Starting recieveing ESP32 data")
         receive_data(sock, game)
+        print("Finished recieveing ESP32 data. Recieved message:")
+        print(game.x_des, game.y_des, game.state, game.cancel)
