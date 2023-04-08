@@ -149,6 +149,9 @@ class gamePlayer(tk.Tk):
         print("new row+ " + str(newRow))
         self.scoreArr.append(newRow)
 
+    def setCancelTrue(self):
+        self.cancel = True
+
 
 
 # Select frame class: used to define and update
@@ -196,8 +199,8 @@ class manual_frame(tk.Frame):
         self.thetaLabel = tk.Label(self, text="", font=controller.title_font, wraplength=300, justify="center")
         self.thetaLabel.pack(pady=20)
 
-        button1 = tk.Button(self, text="Finished",
-                            command=lambda: controller.changeState("thankyou"))
+        button1 = tk.Button(self, text="Cancel",
+                            command=lambda: [controller.changeState("thankyou"),controller.setCancelTrue()])
         button1.pack()
 
     def update(self, time):
@@ -364,6 +367,7 @@ if __name__ == "__main__":
         game.updater(newState)
         game.update()
         #print("Starting send data")
+        print(game.state)
         send_data(sock, game.x_des, game.y_des, game.state, game.cancel)
         #print("Finished send data")
         #print("Starting recieveing ESP32 data")
