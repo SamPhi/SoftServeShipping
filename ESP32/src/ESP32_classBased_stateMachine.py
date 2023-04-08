@@ -23,21 +23,21 @@ class esp32():
             self.cancel = False
             self.x_des =0
             self.y_des = 0
-            self.phone_state = "selector"
+            self.phone_state = "select"
 
 
         def getstate(self):
-            if self.phone_state == "selector" and self.checkHomed() == True:
+            if self.phone_state == "select" and self.checkHomed() == True:
                 self.state = "idle"
-            elif self.phone_state == "auto"and self.cancel==False and self.checkFinished() == False:
+            elif self.phone_state == "automatic"and self.cancel==False and self.checkFinished() == False:
                 self.state = "auto"
             elif self.phone_state =="manual" and self.cancel==False and self.checkFinished() == False:
                 self.state = "manual"
-            elif self.phone_state == "auto"and (self.cancel==True or self.checkFinished() == True):
-                self.state = "auto"
+            elif self.phone_state == "automatic"and (self.cancel==True or self.checkFinished() == True):
+                self.state = "finished"
             elif self.phone_state =="manual" and (self.cancel==True or self.checkFinished() == True):
-                self.state = "manual"
-            elif self.phone_state == "selector" and self.checkHomed() == False:
+                self.state = "finished"
+            elif self.phone_state == "select" and self.checkHomed() == False:
                 print("error not homed")
             else:
                 print ("No corresponding esp32 state")
@@ -83,17 +83,17 @@ def start_server():
 #communicaiton Functions
 def recieveDate(sock, ESP32):# Receive data
     data = sock.recv(1024)
-    #if no new data, return (hence values stay same as befor
+    # if no new data, return (hence values stay same as before
     if not data:
         return
-        #If recieved multiple data packets since last check, only take the most recent
-        if len(data) != 56:
-            data = data[-56:]
-        data = json.loads(data.decode())
-        ESP32.x_des = data.get("x_des")
-        ESP32.y_des = data.get("y_des")
-        ESP32.phone_state = data.get("state")
-        ESP32.cancel = data.get("cancel")
+    # If recieved multiple data packets since last check, return
+    if "}{" in data.decode():
+        return
+    data = json.loads(data.decode())
+    ESP32.x_des = data.get("x_des")
+    ESP32.y_des = data.get("y_des")
+    ESP32.phone_state = data.get("state")
+    ESP32.cancel = data.get("cancel")
 
 
 def send_data(sock, x_pos,y_pos,homed,finished,theta):
@@ -152,3 +152,22 @@ while True:
     ESP32.getstate()
     ESP32.actions()
     send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
