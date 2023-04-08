@@ -3,7 +3,6 @@ from machine import Pin, PWM, Timer, ADC, PWM
 from rotary_irq_esp import RotaryIRQ
 import time
 
-
 """ LIMIT SWITCH SETUP """
 LS1 = Pin(4, Pin.IN, Pin.PULL_UP)
 LS2 = Pin(16, Pin.IN, Pin.PULL_UP)
@@ -54,9 +53,6 @@ r = RotaryIRQ(pin_num_clk=39,
 
 val_old = r.value()
 
-time.sleep_ms(50)
-
-
 """ FUNCTIONS """
 
 def horizontalPosition(val_old):
@@ -92,15 +88,15 @@ def checkEnd():
         return False
     
     
-def moveMotorRight(speed):
+def moveMotorLeft(speed):
     motor.duty(int(0))
     rev_motor.duty(int(speed))
-    print('right')
+    #print('right')
     
-def moveMotorLeft(speed):
+def moveMotorRight(speed):
     motor.duty(int(speed))
     rev_motor.duty(int(0))
-    print('left')
+    #print('left')
 
 homed = False
 
@@ -145,22 +141,24 @@ def moveToPosition(xcoord):
             positioned = True
     return True
 
-def checkWatchDog(): #take in 2x1 vector of states, return T if hit
-    if LS1.value() or LS2.value() == True:
-        return True
-    else:
+def checkWatchDog(): #take in 2x1 vector of states, return F if hit
+    #print('ls1', bool(LS1.value()), 'ls2', bool(LS2.value()))
+    if (LS1.value() == False) or (LS2.value() == False):
+        #print('wd false')
         return False
-
+    else:
+        #print('wd true')
+        return True
 def calculateDynamics(pos_x,pos_x_last,t_last,x_des):
-    Kp = 0.3
+    Kp = 0.001
     dx = pos_x - pos_x_last/t_last
-    u = Kp*x_des - (Kp*pos_x + dx)
-    print(u)
+    u = Kp*(x_des - pos_x)
+    print('u = ', u)
     return u
 
 def writeMotors(PWM_x):
-    print(checkWatchDog())
-    if checkWatchDog() == False:
+    #print('wd = ', checkWatchDog())
+    if checkWatchDog() == True:
         if PWM_x < 0:
             moveMotorRight(min(abs(PWM_x)*1000,1023)) #assuming ~1000 is max PWM
             print(PWM_x, ' right')
@@ -175,10 +173,21 @@ def writeMotors(PWM_x):
 r.set(value=0)
 while True:
     position = horizontalPosition(val_old)
+    # print('Position = ', position)
     
-    looptime = 50
-    time.sleep_ms(looptime)
+    
+    # homing sequence + move to start
+    homed = True # cop out to avoid homing at start *for debugging)
+    if not homed:
+        homed = homingFunction()
+        farRight = horizontalPosition(val_old)
+        print('Far Right position is',farRight)
+        print('Moving to start')
+        moveToPosition(int(farRight*.125))
+        print('Successfully moved to start!!!')
+    
+    time.sleep_ms(50)
     # time.sleep_us(100)
+    
     moveMotorLeft(500)
-    #writeMotors(calculateDynamics(position,val_old,looptime/1000,0.0))
-
+    #manualMovement() # currently controls horizontal movement, NOT Y MOVEMENT *yet
