@@ -55,12 +55,13 @@ class gamePlayer(tk.Tk):
         self.newState = newState
 
     def updater(self, newState):
-        # Update acts as the state machine for the system
+        # Updater acts as the state machine for the system
 
         # update maxTheta for score tracking
         self.updateMaxTheta()
 
         # update newState for non-button related events
+        #If no non-button related events, returns newState unchanged
         if newState == self.state:
             newState = self.updateStateNonButton(newState)
 
@@ -141,11 +142,14 @@ class select_frame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        # create text label
+        # Label for the welcome text:
         label = tk.Label(self,
                          text="Welcome to soft serve shipping! Please select automatic or manual mode using the buttons below",
                          font=controller.title_font, wraplength=300, justify="center")
         label.pack(side="top", fill="x", pady=10)
+
+        #label for the scoring table
+
 
         button1 = tk.Button(self, text="Manual",
                             command=lambda: controller.changeState("manual"))
@@ -242,6 +246,7 @@ class timer():
         return self.time
 
     def getTimeString(self):
+        #TODO: Make timeString appears as XX:XX instead of X:X for 1 digit numbers
         timeSec = self.getTime()
         minutes = math.floor(timeSec / 60)
         seconds = math.floor(timeSec - minutes * 60)
@@ -271,7 +276,6 @@ def send_data(sock, x_des, y_des, state, cancel):
 
 def receive_data(sock,game):
     # Receive data
-    sock.settimeout(1)
     data = sock.recv(1024)
     if not data:
         return
