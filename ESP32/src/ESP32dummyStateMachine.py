@@ -43,7 +43,8 @@ def receive_data(sock):
 if __name__ == '__main__':
     sock = start_server()
     while True:
-        finished = True #input("Input Finished:")
+        theta += 1
+        finished = False #input("Input Finished:")
         homed = False #input("input homed")
         send_data(sock, x_pos,y_pos,homed,finished,theta)
         time.sleep(0.001)
