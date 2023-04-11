@@ -277,7 +277,7 @@ class actuator():
             self.rev_motor.duty(int(0))
             # print("Stopped")
 
-    def autoMove(self,x_des):
+    def autoMove(self, x_des):
         return
 
 
