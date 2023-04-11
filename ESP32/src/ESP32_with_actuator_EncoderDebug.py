@@ -291,6 +291,10 @@ class actuator():
 
     def autoMove(self,x_des):
         return
+    
+    def updateEnc(self):
+        self.x_pos= self.horizontalPosition()
+
 
 
 
@@ -343,19 +347,24 @@ def send_data(sock, x_pos,y_pos,homed,finished,theta):
 
 #phone_connect()
 #sock = start_server()
-ESP32 = esp32()
-ESP32.getstate()
-ESP32.state ="manual"
+#ESP32 = esp32()
+#ESP32.getstate()
+#ESP32.state ="manual"
+myActuator = actuator()
+# while True:
+#     #recieveDate(sock, ESP32)
+#     print("ESP32 state is: " + str(ESP32.state))
+#     print("phone_state is: " + str(ESP32.phone_state))
+#     print(ESP32.myActuator.x_pos)
+#     ESP32.myActuator.updateEnc()
+#     #ESP32.getstate()
+#     ESP32.actions()
+#     #send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
 
 while True:
-    #recieveDate(sock, ESP32)
-    print("ESP32 state is: " + str(ESP32.state))
-    print("phone_state is: " + str(ESP32.phone_state))
-    print(ESP32.myActuator.x_pos)
-    ESP32.updatePhysicalVals()
-    #ESP32.getstate()
-    ESP32.actions()
-    #send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
+    myActuator.updateEnc()
+    myActuator.manualMovement()
+    print(myActuator.x_pos)
 
 
 

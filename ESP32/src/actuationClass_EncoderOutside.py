@@ -36,24 +36,7 @@ class actuator():
         self.slope = self.maxMotorPower / (self.maxJoy - self.centerJoy)
         # xStick.width(ADC.WIDTH_12BIT)
 
-        """ GANTRY (HORIZONTAL) ENCODER SETUP """
-        self.pinA = Pin(39, Pin.IN)  # Set up pins for encoder
-        self.pinB = Pin(36, Pin.IN)
-
-        """ HORIZONTAL ENCODER SETUP """
-        self.prevA = self.pinA.value()
-        self.prevB = self.pinB.value()
-        self.encoder_pos = 0
-
-        self.r = RotaryIRQ(pin_num_clk=39,
-                      pin_num_dt=36,
-                      min_val=0,
-                      max_val=1000000,
-                      reverse=False,
-                      range_mode=RotaryIRQ.RANGE_WRAP)
-
-        self.val_old = self.r.value()
-
+        
         """ homing flags setup"""
         self.homingSpeed = 600
         self.leftHomed = False
@@ -63,14 +46,6 @@ class actuator():
         """ Move to X setup """
         self.positioned = False
         self.tol = 5
-        
-
-    def horizontalPosition(self):
-        val_new = self.r.value()
-        if self.val_old != val_new:
-            self.val_old = val_new
-
-        return val_new
 
     def checkLimLeft(self):
         if self.LS1.value() == 0:
@@ -148,12 +123,15 @@ class actuator():
         else:
             return True
 
-    def manualMovement(self):
-        print("In manualmovement()")
+    def manualMovement(self,position):
+        print("Reading joystick")
+        #print("In manualmovement()")
         x_value = self.xStick.read() - self.centerJoy - 10
         y_value = self.yStick.read() - self.centerJoy - 10
         speed = self.slope * x_value * 10
         buttonState = self.button.value()
+        
+        print("Checking lim switches")
 
         rightHit = self.checkLimRight()
         leftHit = self.checkLimLeft()
@@ -162,6 +140,8 @@ class actuator():
             speed = 1023
         if speed < -1023:
             speed = -1023
+            
+        print("If loop")
 
         if x_value >= self.deadBand and not rightHit:
             print("In goingRight()")
@@ -183,17 +163,41 @@ class actuator():
             self.motor.duty(int(0))
             self.rev_motor.duty(int(0))
             # print("Stopped")
+            
+        print("End")
 
 
 """ FUNCTIONS """
 
 
+""" GANTRY (HORIZONTAL) ENCODER SETUP """
+pinA = Pin(39, Pin.IN)  # Set up pins for encoder
+pinB = Pin(36, Pin.IN)
+
+""" HORIZONTAL ENCODER SETUP """
+prevA = pinA.value()
+prevB = pinB.value()
+encoder_pos = 0
+
+r = RotaryIRQ(pin_num_clk=39,
+pin_num_dt=36,
+min_val=0,
+max_val=1000000,
+reverse=False,
+range_mode=RotaryIRQ.RANGE_WRAP)
+
+ 
+def horizontalPosition():
+       val_new = r.value()
+       return val_new
+
+
 """ RUNNING LOOP """
 myActuator = actuator()
-homed = myActuator.homingFunction()
+#homed = myActuator.homingFunction()
 
 while True:
-    position = myActuator.horizontalPosition()
+    position = horizontalPosition()
     # print('Position = ', position)
 #    print(myActuator.LS2.value())
 
@@ -208,8 +212,8 @@ while True:
 #         myActuator.moveToPosition(int(myActuator.farRight *.125))
 #         #print('Successfully moved to start!!!')
     
-    myActuator.manualMovement()
-    print(myActuator.horizontalPosition())
+    myActuator.manualMovement(position)
+    print(position)
    # myActuator.manualMovement() # currently controls horizontal movement, NOT Y MOVEMENT *yet
 
     #if myActuator.checkStart():

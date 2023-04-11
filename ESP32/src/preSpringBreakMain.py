@@ -78,15 +78,15 @@ r = RotaryIRQ(pin_num_clk=39,
 
 val_old = r.value()
 
-time.sleep_ms(50)
+#time.sleep_ms(50)
 
 
 """ FUNCTIONS """
 
 def horizontalPosition(val_old):
     val_new = r.value()
-    if val_old != val_new:
-        val_old = val_new
+    #if val_old != val_new:
+    #    val_old = val_new
         
     return val_new
 
@@ -131,7 +131,7 @@ def homingFunction():
     rightHomed = False
     print('Homing Left')
     while not leftHomed:
-        time.sleep_ms(50)
+ #       time.sleep_ms(50)
         position = horizontalPosition(val_old)
         moveMotorLeft(homingSpeed)
         leftHomed = checkLimLeft()
@@ -141,7 +141,7 @@ def homingFunction():
             r.set(value=0)
             print('Homing Right')
     while not rightHomed:
-        time.sleep_ms(50)
+#        time.sleep_ms(50)
         position = horizontalPosition(val_old)
         #print(position)
         moveMotorRight(600)
@@ -206,7 +206,7 @@ while True:
     
     
     # homing sequence + move to start
-    homed = True # cop out to avoid homing at start *for debugging)
+    #homed = True # cop out to avoid homing at start *for debugging)
     if not homed:
         homed = homingFunction()
         farRight = horizontalPosition(val_old)
@@ -214,13 +214,14 @@ while True:
         print('Moving to start')
         moveToPosition(int(farRight*.125))
         print('Successfully moved to start!!!')
+        
     
     time.sleep_ms(50)
     # time.sleep_us(100)
     
     manualMovement() # currently controls horizontal movement, NOT Y MOVEMENT *yet
     
-    
+    print(horizontalPosition(val_old))
 
     if checkStart():
         print('Start sensor TRIGGERED')
