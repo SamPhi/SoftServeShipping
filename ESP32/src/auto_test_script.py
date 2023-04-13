@@ -25,7 +25,6 @@ class esp32():
             self.state = "idle"
             self.finished = False
             self.homed = False
-            self.partHomed = False
 
             #Instance of actuator class
             self.myActuator = actuator()
@@ -33,11 +32,8 @@ class esp32():
 
         def updatePhysicalVals(self):
             # Update variables:
-            
             self.theta = self.myActuator.getTheta()
-            self.myActuator.x_pos= self.myActuator.horizontalPosition()
-            self.x_pos = self.myActuator.x_pos
-            #self.x_pos = self.myActuator.horizontalPosition()
+            self.x_pos = self.myActuator.horizontalPosition()
 
 
         def getstate(self):
@@ -77,21 +73,14 @@ class esp32():
                 self.myActuator.manualMovement()
 
             elif self.state =="finished":
-                if self.partHomed == False and self.homed == False:
-                    partHomed = self.myActuator.homingFunction()
-                    if partHomed ==True:
-                        self.partHomed = True
-                else:
-                    print(0.125*self.myActuator.farRight)
-                    moveToStart = self.myActuator.moveToPosition(0.125*self.myActuator.farRight)
-                    if moveToStart == True:
-                        self.homed = True
-                        self.partHomed = False
+                homed = self.myActuator.homingFunction()
+                if homed == True:
+                    self.homed = True
 
         def checkFinished(self):
             #check ending sensor
             self.finished = self.myActuator.checkFinished()
-            return self.finished
+            return self.finished()
 
         def checkHomed(self):
             return self.homed
@@ -148,20 +137,19 @@ class actuator():
         self.val_old = self.r.value()
 
         """ homing flags setup"""
-        self.homingSpeed = 600
+        self.homingSpeed = 1000
         self.leftHomed = False
         self.rightHomed = False
         self.farRight = 0
-        self.x_pos = 0
 
         """ Move to X setup """
         self.positioned = False
-        self.tol = 1
+        self.tol = 5
 
     def horizontalPosition(self):
         val_new = self.r.value()
-        #if self.val_old != val_new:
-        #    self.val_old = val_new
+        if self.val_old != val_new:
+            self.val_old = val_new
 
         return val_new
 
@@ -210,11 +198,11 @@ class actuator():
         self.rev_motor.duty(int(0))
 
     def homingFunction(self):
-        print('In Homing Function')
+        print('Homing Left')
         if self.leftHomed == False:
             print("Moving left")
-            #time.sleep_ms(50)  # TODO: delete me!!!
-            position = self.x_pos
+            time.sleep_ms(50)  # TODO: delete me!!!
+            position = self.horizontalPosition()
             self.moveMotorLeft(self.homingSpeed)
             self.leftHomed = self.checkLimLeft()
             # print('left homed is: ',leftHomed)
@@ -225,10 +213,10 @@ class actuator():
             return False
         elif self.rightHomed == False and self.leftHomed == True:
             print("Moving right")
-            #time.sleep_ms(50)  # TODO: Delete me!!!
-            position = self.x_pos
+            time.sleep_ms(50)  # TODO: Delete me!!!
+            position = self.horizontalPosition()
             # print(position)
-            self.moveMotorRight(self.homingSpeed)
+            self.moveMotorRight(600)
             self.rightHomed = self.checkLimRight()
             # print('left homed is: ',leftHomed)
             # print('right homed is: ',rightHomed)
@@ -238,17 +226,17 @@ class actuator():
         if self.rightHomed and self.leftHomed:
             print('Done Homing')
             self.moveMotorRight(0)
-            self.farRight = self.x_pos
+            self.farRight = myActuator.horizontalPosition()
             self.rightHomed = False
             self.leftHomed = False
             return True
 
     def moveToPosition(self, xcoord):
-        if self.x_pos > xcoord + self.tol and not self.checkLimLeft():
-            self.moveMotorLeft(self.homingSpeed)
+        if self.horizontalPosition() > xcoord + self.tol and not self.checkLimLeft():
+            self.moveMotorLeft(500)
             return False
-        elif self.x_pos < xcoord - self.tol and not self.checkLimRight():
-            self.moveMotorRight(self.homingSpeed)
+        elif self.horizontalPosition() < xcoord - self.tol and not self.checkLimRight():
+            self.moveMotorRight(600)
             return False
         else:
             return True
@@ -289,91 +277,25 @@ class actuator():
             self.rev_motor.duty(int(0))
             # print("Stopped")
 
-    def autoMove(self, x_des):
+    def autoMove(self,x_des):
         return
 
 
+## TESTING EXPLAINED
+# This code will create an instance of the esp32() class, which has an actuator (myActuator) attached to it
+# The ESP32 will home outside the while True loop
+# The ESP32 will then continously update physical values (theta) and go into the auto section of the actions loop
+# The auto section of ESP32.actions() calls myActuator.autoMove() continously
 
-def phone_connect():
-    import network
-    sta_if = network.WLAN(network.STA_IF)
-    if not sta_if.isconnected():
-        print('connecting to network...')
-        sta_if.active(True)
-        sta_if.connect('SoftServeShipping', 'SoftServeShipping')
-        while not sta_if.isconnected():
-            pass
-    print('network config:', sta_if.ifconfig())
-
-
-def start_server():
-    # Create a TCP/IP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # Connect the socket to the port where the server is listening
-    server_address = ('192.168.43.1', 12345) #Should be '192.168.43.1', 12345
-    print('connecting to {} port {}'.format(*server_address))
-    sock.connect(server_address)
-    return sock
-
-#communicaiton Functions
-def recieveDate(sock, ESP32):# Receive data
-    data = sock.recv(1024)
-    # if no new data, return (hence values stay same as before
-    if not data:
-        return
-    # If recieved multiple data packets since last check, return
-    if "}{" in data.decode():
-        return
-    data = json.loads(data.decode())
-    ESP32.x_des = data.get("x_des")
-    ESP32.y_des = data.get("y_des")
-    ESP32.phone_state = data.get("state")
-    ESP32.cancel = data.get("cancel")
-
-
-def send_data(sock, x_pos,y_pos,homed,finished,theta):
-    # Send data
-    positionalDataArr = json.dumps({"x_pos": x_pos, "y_pos": y_pos, "homed": homed, "finished": finished, "theta": theta})
-    message = positionalDataArr.encode()
-    #print('sending {!r}'.format(message))
-    sock.sendall(message)
-
-
-
-
-#phone_connect()
-#sock = start_server()
 ESP32 = esp32()
-ESP32.getstate()
-ESP32.state ="manual"
 
+#Home:
+homeCheck = ESP32.myActuator.homingFunction()
+while homeCheck == False:
+    homeCheck = ESP32.myActuator.homingFunction()
+
+#Set state to auto for testing:
+ESP32.state = "auto"
 while True:
-    #recieveDate(sock, ESP32)
-    print("ESP32 state is: " + str(ESP32.state))
-    print("phone_state is: " + str(ESP32.phone_state))
-    print(ESP32.myActuator.x_pos)
-    ESP32.updatePhysicalVals()
-    #ESP32.getstate()
+    ESP32.updatePhysicalVals() #Not debugged yet - may give weird values
     ESP32.actions()
-    #send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
