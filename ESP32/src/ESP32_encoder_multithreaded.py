@@ -6,6 +6,7 @@ import time
 import socket as socket
 import json
 import _thread
+import gc
 
 
 class esp32():
@@ -353,9 +354,8 @@ def send_data(sock, x_pos, y_pos, homed, finished, theta):
     sock.sendall(message)
 
 #----------------------------------------------------------------------------------------
-#End of helper functions, time to multithread
+#End of state/actuator functions, time to multithread
 # ----------------------------------------------------------------------------------------
-
 
 #Changes for multithreading:
 # 1) Add global lock variable to actuator and instantiate before while loop
@@ -363,6 +363,23 @@ def send_data(sock, x_pos, y_pos, homed, finished, theta):
 # 3) Create new encoder class with readEncoder method
 # 4) Edit actuator class to remove encoder functions
 # 5) Restructure while True loop
+
+
+#Garbage collection function
+#This was stolen straight from: https://www.youtube.com/watch?v=1q0EaTkztIs
+#This functions performs a garbage collection, and then shows how much storage is in use, and how much is cfree after garbage collection
+#This is helpful for debugging
+def free(full=False):
+    gc.collect()
+    F = gc.mem_free() #Return the number of bytes of available heap RAM, or -1 if this amount is not known.
+    A = gc.mem_alloc() #Return the number of bytes of heap RAM that are allocated.
+    T = F + A
+    P = '{0:.2f}%'.format(F / T * 100)
+    if not full:
+        return P
+    else:
+        return ('Total:{0} Free:{1} ({2})'.format(T, F, P))
+
 
 def core0_thread():
     phone_connect()
@@ -383,6 +400,10 @@ def core0_thread():
         ESP32.getstate()
         ESP32.actions()
         send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
+        #Run garbage collection and print how much memory is being used
+        print(free(True))
+
+
 
 def core1_thread():
     global lock
@@ -397,6 +418,9 @@ def core1_thread():
             #If we have acquired lock, we should update x_pos_enc value
             x_pos_enc = Encoder.temp_enc_val
             lock.release()
+        gc.collect() # run garbage collection to clean unused memory
+
+
 
 #Setup global x_pos_enc value
 x_pos_enc = 0
