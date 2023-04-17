@@ -39,7 +39,7 @@ class esp32():
         # self.x_pos = self.myActuator.horizontalPosition()
 
     def getstate(self):
-        if self.phone_state == "select" and self.checkHomed() == True:
+        if (self.phone_state == "select" or self.state == 'finished') and self.checkHomed() == True:
             self.state = "idle"
         elif self.phone_state == "automatic" and self.cancel == False and self.checkFinished() == False:
             self.state = "auto"
@@ -60,6 +60,8 @@ class esp32():
         if self.state == "idle":
             # Do nothing
             self.myActuator.moveMotorRight(0)
+            #Reset flags
+            self.finished = False
 
         elif self.state == "auto":
             # Set homed to False:
@@ -76,25 +78,55 @@ class esp32():
             self.myActuator.manualMovement()
 
         elif self.state == "finished":
+            #Reset cancel flag
+            if self.cancel == True:
+                self.cancel = False
             if self.partHomed == False and self.homed == False:
                 partHomed = self.myActuator.homingFunction()
                 if partHomed == True:
                     self.partHomed = True
             else:
-                print(0.125 * self.myActuator.farRight)
-                moveToStart = self.myActuator.moveToPosition(0.125 * self.myActuator.farRight)
+                print(self.getStartPos())
+                moveToStart = self.myActuator.moveToPosition(self.getStartPos())
                 if moveToStart == True:
                     self.homed = True
                     self.partHomed = False
 
     def checkFinished(self):
         # check ending sensor
-        self.finished = self.myActuator.checkFinished()
-        return self.finished
+        if self.finished == True:
+            return True
+        else:
+            self.finished = self.myActuator.checkFinished()
+            return self.finished
 
     def checkHomed(self):
         return self.homed
-
+    
+    def getStartPos(self):
+        #Number decreases when moving right
+        #But far left number is smaller than far right number due to wrap around
+        #Find absolute difference
+        rightPos = self.unWrap(self.myActuator.farRight)
+        zeroPos = self.unWrap(self.myActuator.zeroPos)
+        diff = abs(zeroPos - rightPos)
+        startPos = self.wrap(zeroPos - int(1/16 * diff))
+        return startPos
+    
+    #Create linear scale for measured encoder values by subtracting 999999 for numbers that have wrapped around
+    #E.g. 5->5, but 999997-> -2 
+    def unWrap(self,num):
+        if num > 500000:
+            num = num - 999999
+        return num
+    
+    #Returns a wrapped value in the case startPos is negative
+    # E.g. 127 -> 127 but -5 -> 999994
+    def wrap(self,num):
+        if num < 0:
+            num = 999999 + num
+        return num
+            
 
 class encoder():
     global x_pos_enc
@@ -126,7 +158,6 @@ class encoder():
 
 
 
-
 class actuator():
     global x_pos_enc
     global lock
@@ -148,8 +179,8 @@ class actuator():
 
         """ JOYSTICK SETUP """
         self.button = Pin(15, Pin.IN, Pin.PULL_UP)
-        self.xStick = ADC(Pin(33))
-        self.yStick = ADC(Pin(34))
+        self.xStick = ADC(Pin(34))
+        self.yStick = ADC(Pin(33))
         self.xStick.atten(ADC.ATTN_11DB)  # Full range: 3.3v
         self.yStick.atten(ADC.ATTN_11DB)  # Full range: 3.3v
 
@@ -168,10 +199,14 @@ class actuator():
         self.rightHomed = False
         self.farRight = 0
         self.x_pos = 0
+        self.resetZero = False
 
         """ Move to X setup """
         self.positioned = False
         self.tol = 1
+        
+        """ Auto function helper"""
+        self.zeroPos = 0
 
     def horizontalPosition(self):
         lock.acquire()
@@ -224,34 +259,27 @@ class actuator():
         self.rev_motor.duty(int(0))
 
     def homingFunction(self):
-        print('In Homing Function')
-        if self.leftHomed == False:
-            print("Moving left")
-            # time.sleep_ms(50)  # TODO: delete me!!!
+        #print('In Homing Function')
+        if self.leftHomed == False or self.resetZero == False:
+            #print("Moving left")
             position = self.x_pos
             self.moveMotorLeft(self.homingSpeed)
             self.leftHomed = self.checkLimLeft()
-            # print('left homed is: ',leftHomed)
-            if self.checkLimLeft():
-                # print('LEFT HOMED')
-                self.r.set(value=0)
-                print('Homing Right')
+            if self.leftHomed == True:
+                self.zeroPos = self.x_pos
+                self.resetZero = True
+                #print('Homing Right')
             return False
         elif self.rightHomed == False and self.leftHomed == True:
-            print("Moving right")
-            # time.sleep_ms(50)  # TODO: Delete me!!!
+            #print("Moving right")
             position = self.x_pos
-            # print(position)
             self.moveMotorRight(self.homingSpeed)
             self.rightHomed = self.checkLimRight()
-            # print('left homed is: ',leftHomed)
-            # print('right homed is: ',rightHomed)
-            # if checkLimRight():
-            # print('RIGHT HOMED')
             return False
         if self.rightHomed and self.leftHomed:
-            print('Done Homing')
+            #print('Done Homing')
             self.moveMotorRight(0)
+            print("HERE ---------------------------------------------------------------")
             self.farRight = self.x_pos
             self.rightHomed = False
             self.leftHomed = False
@@ -268,9 +296,13 @@ class actuator():
             return True
 
     def manualMovement(self):
-        print("In manualmovement()")
+        #print("In manualmovement()")
         x_value = self.xStick.read() - self.centerJoy - 10
         y_value = self.yStick.read() - self.centerJoy - 10
+        
+        #Adjust due to reverse wiring of joystick
+        x_value = x_value * (-1)
+
         speed = self.slope * x_value * 10
         buttonState = self.button.value()
 
@@ -283,7 +315,7 @@ class actuator():
             speed = -1023
 
         if x_value >= self.deadBand and not rightHit:
-            print("In goingRight()")
+            #print("In goingRight()")
 
             # run one direction
             self.motor.duty(int(0))
@@ -291,21 +323,20 @@ class actuator():
             # print("Running Right")
             # print(speed)
         elif x_value <= -self.deadBand and not leftHit:
-            print("In goingleft()")
+            #print("In goingleft()")
             # run the other direction
             self.motor.duty(int(-speed))
             self.rev_motor.duty(int(0))
             # print("Running Left")
             # print(speed)
         else:
-            print("In stopped()")
+            #print("In stopped()")
             self.motor.duty(int(0))
             self.rev_motor.duty(int(0))
             # print("Stopped")
 
     def autoMove(self, x_des):
         return
-
 
 def phone_connect():
     import network
@@ -402,6 +433,9 @@ def core0_thread():
         send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
         #Run garbage collection and print how much memory is being used
         print(free(True))
+        print("Esp32 checkHomed(): " + str(ESP32.checkHomed()))
+        print("Esp32 cancel: " + str(ESP32.cancel))
+        print("Esp32 checkFinished: " + str(ESP32.checkFinished()))
 
 
 
@@ -431,25 +465,3 @@ lock = _thread.allocate_lock()
 #Start threads:
 second_thread = _thread.start_new_thread(core1_thread, ())
 core0_thread()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
