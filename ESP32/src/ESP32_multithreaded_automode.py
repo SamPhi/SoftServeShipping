@@ -219,17 +219,25 @@ class actuator():
         self.Kp = 0.0001
         self.Ki = 0.0001
         self.Kd = 0.0001
+        
+        """Angle sensor setup"""
+        self.angleSensor = ADC(Pin(32)) #TODO: Change to pin in range GPIO 32-39
+        self.angleSensor.atten(ADC.ATTN_11DB)
+
+        #Empirically attained constants:
+        self.center = 1863.5
+        self.FortyFiveDeg = 1371.6
+        self.OneDeginCounts = (self.center-self.FortyFiveDeg)/45
 
 
     def horizontalPosition(self):
-        lock.acquire()
         self.x_pos = x_pos_enc
-        lock.release()
         return self.x_pos
 
     def getTheta(self):
-        # TODO Add pot code here!!!!
-        return 13
+        ang = self.angleSensor.read()
+        angDeg = (ang-self.center)/self.OneDeginCounts
+        return angDeg
 
     def checkLimLeft(self):
         if self.LS1.value() == 0:
@@ -493,7 +501,9 @@ def core0_thread():
         print(ESP32.myActuator.x_pos)
         #This calls ESP32.updatePhysicalVals which calls myActuator.horizontalPositon() which acquires and releases lock
         #We do this because we want to call lock only when strictly necessary, i.e. when we read the encoder
+        lock.acquire()
         ESP32.updatePhysicalVals()
+        lock.release()
         ESP32.getstate()
         ESP32.actions()
         send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
