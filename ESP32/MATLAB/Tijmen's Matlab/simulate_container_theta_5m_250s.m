@@ -108,7 +108,7 @@ z0 = [q0;
       dq0] ;
  
 % Simulate dynamics
-[t_sol, x_sol] = ode45(@double_pendulum_dynamics, [0 1000], z0) ;
+[t_sol, x_sol] = ode45(@double_pendulum_dynamics, [0 100], z0) ;
 
 hold on
 nexttile ; plot(t_sol, rad2deg(x_sol(:,2))) ; legend('th') %[x_sol(:,1)/100, rad2deg(x_sol(:,2))]
