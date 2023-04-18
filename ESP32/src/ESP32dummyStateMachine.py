@@ -11,7 +11,7 @@ def start_server():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Connect the socket to the port where the server is listening
-    server_address = ('127.0.0.1', 12345) #Should be '192.168.43.1', 12345
+    server_address = ('127.0.0.1', 12345) #Should be '192.168.43.1', 12345 for phone, '127.0.0.1', 12345 for local
     print('connecting to {} port {}'.format(*server_address))
     sock.connect(server_address)
     return sock
@@ -42,8 +42,20 @@ def receive_data(sock):
 
 if __name__ == '__main__':
     sock = start_server()
+    up = True
     while True:
-        theta += 1
+
+        #Theta emulator
+        step = 0.01
+        if theta > 20:
+            up = False
+        elif theta<-20:
+            up = True
+        if up == True:
+            theta +=step
+        elif up == False:
+            theta -= step
+
         finished = False #input("Input Finished:")
         homed = False #input("input homed")
         send_data(sock, x_pos,y_pos,homed,finished,theta)
