@@ -10,6 +10,8 @@ syms d2x d2th real
 syms th_des x_des real
 syms u real
 syms t real
+syms kpx kdx real
+syms kpt kdt real
 
 % Generalized coordinates
 q = [x;
@@ -74,17 +76,14 @@ matlabFunction(p1, 'File', 'auto_p1') ;
 matlabFunction(p2, 'File', 'auto_p2') ;
 
 %% compute u
-global params;
-params.xdes = x_des;
-params.th = th;
-params.th_des = th_des;
 
     fder = [dq ;
          inv(D)*( -C*dq - G)] ;
     gder = [zeros(2,1) ;
          inv(D)*B] ;
 
-u = simplify(FeedbackControl(q, dq, fder, gder, params, t));
+u = simplify(FeedbackControl(q, dq, fder, gder, t, x_des, kpx, kdx, kpt, kdt));
+
 
 matlabFunction(u, 'File', 'auto_u_container') ;
 
@@ -150,44 +149,22 @@ function dz = double_pendulum_dynamics(t, z, params)
     dz = f + g*u ;
 end
 
-function beta = EventControl(params, xcurrent,t)
-    global epast
-    global tpast
-    e = xcurrent-params.xdes;
-    Kp = 0.001; %0.000001
-    Kd = .01; %0.0001
-    Ki = 0.0001;
-    if t == 0
-        t = 0.01;
-    end
+function th_des = calculateTheta(x_des, pos_x, t, kpt, kdt)
 
-    tstep = t-tpast;
-    if tstep == 0
-        tstep = 0.01;
-    end
+    e = pos_x-x_des/2;
     %pd control + Kd*(e - epast)/(t)
-    beta = (Kp*e) + Kd*(e-epast)/tstep; %- Kd*(e - epast)/(tstep);
-%     th_des = params.th_des - beta;
-%     params.th_des = th_des;
+    th_des = (kpt*e) + kdt; % + Kd*(e-epast)/0.01; %- Kd*(e - epast)/(tstep);
 
-    if t ~= tpast
-        tpast = t;
-    end
-    
-    epast = e;
 
 end
 
-function u = FeedbackControl(q, dq, f, g, params,t)
-    global kppast
-    x = q(1) ; th = q(2) ;
+function u = FeedbackControl(q, dq, fx, gx ,t, x_des, kpx, kdx, kpt, kdt)
+    pos_x = q(1) ; th = q(2) ;
     dx = dq(1) ; dth = dq(2) ;
-    th_des = params.th_des;
-    x_des = params.xdes;
     % System constants
     m1=1 ; m2=0.5; l1=1; %g=9.81; 
     
-    th_des = EventControl(params, x,t);
+    th_des = calculateTheta(x_des, pos_x, t, kpt, kdt);
     h = auto_h(th,th_des);
     %h = auto_h(x, x_des);
     dh_dq = auto_dh_dq() ;
@@ -195,37 +172,13 @@ function u = FeedbackControl(q, dq, f, g, params,t)
     
     % Compute Lie Derivatives
     Lfh = dh_dq*dq ;
-    Lf2h = d2h__*f ;
-    LgLfh = d2h__*g ;
+    Lf2h = d2h__*fx ;
+    LgLfh = d2h__*gx ;
     
     % Compute Control
-    kp = 2.5 ;%2.5 
-    kd =  0.1 ;
-
-    v = -kp*h - kd*Lfh ;
+    v = -kpx*h - kdx*Lfh ;
 
     u = inv(LgLfh)*(-Lf2h + v) ; % IO Linearization
-end
-
-function animate_pendulum(t, z)
-    % System constants
-    m1=1 ; m2=0.5; l=1; g=9.81; 
-    
-    figure ;
-    for j=1:length(t)
-        % Extract coordinates
-        q = z(j,1:2) ;
-        x = q(1) ; th = q(2) ;
-        p1 = auto_p1(x);
-        p2 = auto_p2(l,th,x) ;
-        pts = [0 0 ;
-               p1' ;
-               p2'] ;
-        plot(pts(:,1), pts(:,2), '-o') ;
-        legend(num2str(rad2deg(th)));
-        axis([-3+x 3+x -3 3]) ; grid on ;
-        pause(0.05) ;
-    end
 end
 
 function [D, C, G, B] = LagrangianDynamics(T, U, q, dq, q_act)
