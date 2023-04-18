@@ -11,7 +11,7 @@ def start_server():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Connect the socket to the port where the server is listening
-    server_address = ('192.168.43.1', 12345)
+    server_address = ('127.0.0.1', 12345) #Should be '192.168.43.1', 12345 for phone, '127.0.0.1', 12345 for local
     print('connecting to {} port {}'.format(*server_address))
     sock.connect(server_address)
     return sock
@@ -29,9 +29,9 @@ def receive_data(sock):
     #if no new data, return (hence values stay same as before
     if not data:
         return
-    #If recieved multiple data packets since last check, only take the most recent
-    if len(data) != 56:
-        data = data[-56:]
+    #If recieved multiple data packets since last check, return
+    if "}{" in data.decode():
+        return
     data = json.loads(data.decode())
     x_des = data.get("x_des")
     y_des = data.get("y_des")
@@ -42,11 +42,25 @@ def receive_data(sock):
 
 if __name__ == '__main__':
     sock = start_server()
+    up = True
     while True:
+
+        #Theta emulator
+        step = 0.01
+        if theta > 20:
+            up = False
+        elif theta<-20:
+            up = True
+        if up == True:
+            theta +=step
+        elif up == False:
+            theta -= step
+
+        finished = False #input("Input Finished:")
+        homed = False #input("input homed")
         send_data(sock, x_pos,y_pos,homed,finished,theta)
-        time.sleep(3)
+        time.sleep(0.001)
         phoneData = receive_data(sock)
         print(phoneData)
-        time.sleep(3)
-        finished = True
-        send_data(sock, x_pos, y_pos, homed, finished, theta)
+        time.sleep(0.001)
+        
