@@ -59,7 +59,7 @@ def horizontalPosition(val_old):
     val_new = r.value()
     if val_old != val_new:
         val_old = val_new
-        print('result =', val_new)    
+        #print('pos =', val_new)    
         
     return val_new
 
@@ -149,22 +149,27 @@ def checkWatchDog(): #take in 2x1 vector of states, return F if hit
     else:
         #print('wd true')
         return True
+
+def calculateTheta(x_des, pos_x, theta, th_des):
+
+
+
 def calculateDynamics(pos_x,pos_x_last,t_last,x_des):
-    Kp = 0.001
+    Kp = 0.01
     dx = pos_x - pos_x_last/t_last
     u = Kp*(x_des - pos_x)
-    print('u = ', u)
+    #print('u = ', u)
     return u
 
-def writeMotors(PWM_x):
+def writeMotors(u):
     #print('wd = ', checkWatchDog())
     if checkWatchDog() == True:
-        if PWM_x < 0:
-            moveMotorRight(min(abs(PWM_x)*1000,1023)) #assuming ~1000 is max PWM
-            print(PWM_x, ' right')
-        elif PWM_x > 0:
-            moveMotorLeft(min(abs(PWM_x)*1000, 1023)) #assuming ~1000 is max PWM
-            print(PWM_x, ' left')
+        if u < 0:
+            moveMotorRight(min(abs(u)*6000,1023)) #assuming ~1000 is max PWM
+            print(u, ' right', 'pwm ', min(abs(u)*1000,1023))
+        elif u > 0:
+            moveMotorLeft(min(abs(u)*6000, 1023)) #assuming ~1000 is max PWM
+            print(u, ' left', 'pwm ', min(abs(u)*1000,1023))
         else:
             return
     return
@@ -173,21 +178,13 @@ def writeMotors(PWM_x):
 r.set(value=0)
 while True:
     position = horizontalPosition(val_old)
-    # print('Position = ', position)
+    print('Position = ', position)
     
-    
-    # homing sequence + move to start
-    homed = True # cop out to avoid homing at start *for debugging)
-    if not homed:
-        homed = homingFunction()
-        farRight = horizontalPosition(val_old)
-        print('Far Right position is',farRight)
-        print('Moving to start')
-        moveToPosition(int(farRight*.125))
-        print('Successfully moved to start!!!')
-    
-    time.sleep_ms(50)
+    time.sleep_ms(20)
     # time.sleep_us(100)
+
+    #moveMotorLeft(500)
     
-    moveMotorLeft(500)
-    #manualMovement() # currently controls horizontal movement, NOT Y MOVEMENT *yet
+    u = calculateDynamics(position, 1, 1, 500)
+    writeMotors(u)
+    #writeMotors(u)

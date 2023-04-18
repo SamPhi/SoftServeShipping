@@ -180,22 +180,23 @@ def manualMovement():
     if speed < -1023:
         speed = -1023
 
+    print(rightHit, ' ', leftHit, ' ', deadBand)
     if x_value >= deadBand and not rightHit:
         # run one direction
         motor.duty(int(0))
         rev_motor.duty(int(speed))
-        # print("Running Right")
-        # print(speed)
+        print("Running Right")
+        print(speed)
     elif x_value <= -deadBand and not leftHit:
         # run the other direction
         motor.duty(int(-speed))
         rev_motor.duty(int(0))
-        # print("Running Left")
-        # print(speed)
+        print("Running Left")
+        print(speed)
     else:
         motor.duty(int(0))
         rev_motor.duty(int(0))
-        # print("Stopped")
+        print("Stopped")
 
 
 """ RUNNING LOOP """
