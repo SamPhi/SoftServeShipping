@@ -166,7 +166,7 @@ function beta = EventControl(params, xcurrent,t)
         tstep = 0.01;
     end
     %pd control + Kd*(e - epast)/(t)
-    beta = (Kp*e); %- Kd*(e - epast)/(tstep);
+    beta = (Kp*e) + Kd*e-epast/0.01; %- Kd*(e - epast)/(tstep);
 %     th_des = params.th_des - beta;
 %     params.th_des = th_des;
 

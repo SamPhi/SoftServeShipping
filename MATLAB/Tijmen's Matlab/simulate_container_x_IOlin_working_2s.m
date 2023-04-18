@@ -117,7 +117,7 @@ nexttile
 plot(t_sol, x_sol(:,1)); legend('x')
 xlabel('Time (s)') ; ylabel('x (m)') ;
 
-animate_pendulum(t_sol, x_sol) ;
+%animate_pendulum(t_sol, x_sol) ;
 
 %% functions
 
