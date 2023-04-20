@@ -219,6 +219,15 @@ class actuator():
         self.Kp = 0.0001
         self.Ki = 0.0001
         self.Kd = 0.0001
+        
+        """Angle sensor setup"""
+        self.angleSensor = ADC(Pin(32)) #TODO: Change to pin in range GPIO 32-39
+        self.angleSensor.atten(ADC.ATTN_11DB)
+
+        #Empirically attained constants:
+        self.center = 1863.5
+        self.FortyFiveDeg = 1371.6
+        self.OneDeginCounts = (self.center-self.FortyFiveDeg)/45
 
 
     def horizontalPosition(self):
@@ -226,8 +235,9 @@ class actuator():
         return self.x_pos
 
     def getTheta(self):
-        # TODO Add pot code here!!!!
-        return 13
+        ang = self.angleSensor.read()
+        angDeg = (ang-self.center)/self.OneDeginCounts
+        return angDeg
 
     def checkLimLeft(self):
         if self.LS1.value() == 0:
