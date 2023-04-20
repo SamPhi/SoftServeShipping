@@ -222,9 +222,7 @@ class actuator():
 
 
     def horizontalPosition(self):
-        lock.acquire()
         self.x_pos = x_pos_enc
-        lock.release()
         return self.x_pos
 
     def getTheta(self):
@@ -361,6 +359,8 @@ class actuator():
         #Control values
         print("Auto x_error " + str(x_error))
         print("X pos " + str(self.x_pos))
+
+
         PWM = self.Kp*x_error #TODO turn this into real value
 
         #Actually write calculated PWMN vals to motor
@@ -493,7 +493,9 @@ def core0_thread():
         print(ESP32.myActuator.x_pos)
         #This calls ESP32.updatePhysicalVals which calls myActuator.horizontalPositon() which acquires and releases lock
         #We do this because we want to call lock only when strictly necessary, i.e. when we read the encoder
+        lock.acquire()
         ESP32.updatePhysicalVals()
+        lock.release()
         ESP32.getstate()
         ESP32.actions()
         send_data(sock, ESP32.x_pos, ESP32.y_pos, ESP32.homed, ESP32.finished, ESP32.theta)
@@ -512,7 +514,7 @@ def core1_thread():
     while True:
         # Update Encoder.temp_enc_val to current reading from encoder
         Encoder.readEncoder()
-        if not lock.acquire():
+        if not lock.acquire(0):
             pass
         else:
             #If we have acquired lock, we should update x_pos_enc value
