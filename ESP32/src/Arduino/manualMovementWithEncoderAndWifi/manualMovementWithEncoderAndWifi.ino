@@ -8,13 +8,6 @@
 #include <ArduinoJson.h>
 
 
-
-//This code now works and drives motors on core0 whilst printing encoder on core 1
-//Issue: Interrupt that actually polls encoder is still running on core0, need to learn how to move timer + interrupt to second core.
-//Next steps:
-//1) Copy rest of ESP32 functions to Arduino
-//2) 
-
 //FoR MULTI CORE STUFF:
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -144,7 +137,7 @@ void setup() {
   xTaskCreatePinnedToCore(
                     Task1code,   /* Task function. */
                     "Task1",     /* name of task. */
-                    10000,       /* Stack size of task */
+                    4000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
                     1,           /* priority of the task */
                     &Task1,      /* Task handle to keep track of created task */
@@ -192,8 +185,7 @@ void loop() {
 
   //Send data
   send_data(1,2,false,false,3,client);
-  String state = recieve_data(client);
-  Serial.println(state);
+  recieve_data(client);
 }
 
 void driveMotors() {
@@ -257,19 +249,14 @@ void send_data(int x_pos, int y_pos, bool homed, bool finished, int theta, WiFiC
 
 //Recieve data over socket
 
-//TAKES WAY TOO LONG
-//NEED TO FIX
-//CONFIRMED THE ISSUE IS NOT STRING RELATED
-
-//FIXED BY CHANGING clientreadString() to client.read()
-//ISSUE: recieve message one char at a time now
-
-String recieve_data(WiFiClient client){
+void recieve_data(WiFiClient client){
   StaticJsonBuffer<200> jsonBuffer;
-  String json = String(client.read());
-  if (json.length() == 0){
-    return "No Data";
-  }
+  char json[80];
+  client.readBytesUntil('\n',json,80);
+  Serial.println(json);
+  // if (json.length() == 0){
+  //   return "No Data";
+  // }
   
   JsonObject& root = jsonBuffer.parseObject(json);
   //Serial.println(json);
@@ -281,7 +268,7 @@ String recieve_data(WiFiClient client){
   int y_des = root["y_des"];
   String state = root["state"];
   bool cancel = root["cancel"];
-  return state;
+  Serial.println(state);
 }
 
 
