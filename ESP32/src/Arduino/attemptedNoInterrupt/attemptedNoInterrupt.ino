@@ -4,6 +4,8 @@
 #include <math.h>
 #include <Arduino.h>
 #include <Bounce2.h>
+#include <WiFi.h>
+
 
 //This code now works and drives motors on core0 whilst printing encoder on core 1
 //Issue: Interrupt that actually polls encoder is still running on core0, need to learn how to move timer + interrupt to second core.
@@ -15,6 +17,7 @@
 TaskHandle_t Task1;
 TaskHandle_t Task2;
 //MUTI CORE INIT OVER
+
 
 #define BTN 15  // declare the button ED pin number
 #define LED_PIN 13 // declare the builtin LED pin number
@@ -75,6 +78,8 @@ void IRAM_ATTR onTime0() {
 }
 
 void setup() {
+
+  
   //button setup
   button.attach(BTN, INPUT);
   pinMode(BTN, INPUT_PULLUP);
@@ -147,17 +152,28 @@ void Task1code( void * pvParameters ){
 
 
 void loop() {
-  Serial.print("Main loop running on core ");
-  Serial.println(xPortGetCoreID());
+  //Serial.print("Main loop running on core ");
+  //Serial.println(xPortGetCoreID());
+  //Connect to wifi
+  
+
+  //Manual movement
   speed1D = map(analogRead(x_key),0,3600,-1000,1000);
-    D1 = speed1D;
-    if (D1>1000) {
-      D1 = 1000;
-    }
-    if (D1<-1000) {
-      D1 = -1000;
+  
+  //Set driving speed
+  D1 = speed1D;
+
+  //Limits
+  if (D1>1023) {
+    D1 = 1023;
   }
+  if (D1<-1023) {
+    D1 = -1023;
+  }
+
+  //Actuate on motors
   driveMotors();
+
 }
 
 void driveMotors() {
@@ -175,3 +191,9 @@ void driveMotors() {
     ledcWrite(ledChannel_2, LOW);
   }
 }
+
+
+
+
+
+

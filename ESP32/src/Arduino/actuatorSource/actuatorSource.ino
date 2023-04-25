@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "actuator.h"
+
 actuator::actuator() {
   //Limit switch setup
   pinMode(LS1, INPUT_PULLUP);
@@ -13,8 +14,6 @@ actuator::actuator() {
   ledcAttachPin(BIN_1, ledChannel_1); // attach the channels to the GPIOs to be controlled
   ledcAttachPin(BIN_2, ledChannel_2);
   //JOYSTICK
-    
-
 }
 
 //Checks left limit switch, returns true if pressed
@@ -46,7 +45,7 @@ bool actuator::checkEnd() {
 }
 
 //Drives motors - checks PWM in operating range and for limit switch hits
-void writeMotors(int PWM){ 
+void actuator::writeMotors(int PWM){
   //Check PWM Limits
   if (PWM>1023) {
     PWM = 1023;
