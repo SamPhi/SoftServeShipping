@@ -108,14 +108,16 @@ z0 = [q0;
       dq0] ;
  
 % Simulate dynamics
-[t_sol, x_sol] = ode45(@double_pendulum_dynamics, [0 100], z0) ;
+[t_sol, x_sol] = ode45(@double_pendulum_dynamics, [0 10], z0) ;
 
 hold on
 nexttile ; plot(t_sol, rad2deg(x_sol(:,2))) ; legend('th') %[x_sol(:,1)/100, rad2deg(x_sol(:,2))]
 xlabel('Time (s)') ; ylabel('deg') ;
+title('Angle')
 nexttile
 plot(t_sol, x_sol(:,1)); legend('x')
 xlabel('Time (s)') ; ylabel('x (m)') ;
+title('x_pos')
 
 %animate_pendulum(t_sol, x_sol) ;
 
@@ -154,8 +156,8 @@ function beta = EventControl(params, xcurrent,t)
     global epast
     global tpast
     e = xcurrent-params.xdes;
-    Kp = 0.001; %0.000001
-    Kd = .01; %0.0001
+    Kp = 0.05; %0.001 / 0.5
+    Kd = 0.1; %0.01 / 1
     Ki = 0.0001;
     if t == 0
         t = 0.01;
@@ -199,8 +201,8 @@ function u = FeedbackControl(q, dq, f, g, params,t)
     LgLfh = d2h__*g ;
     
     % Compute Control
-    kp = 2.5 ;%2.5 
-    kd =  0.1 ;
+    kp = 30 ;%2.5 
+    kd =  0.5 ;
 
     v = -kp*h - kd*Lfh ;
 

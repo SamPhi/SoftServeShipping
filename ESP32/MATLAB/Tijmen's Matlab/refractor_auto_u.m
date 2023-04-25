@@ -87,67 +87,7 @@ u = simplify(FeedbackControl(q, dq, fder, gder, t, x_des, kpx, kdx, kpt, kdt));
 
 matlabFunction(u, 'File', 'auto_u_container') ;
 
-%% simulate
-clf
-global params;
-global epast;
-params.xdes = 5;
-epast = params.xdes;
-params.th = th;
-params.th_des = deg2rad(-5);
-global tpast
-tpast = 0;
-
-% Simulate double pendulum dynamic
-q0 = [0; %x
-      deg2rad(0)]; %th
-dq0 = [0;
-       0] ;
-z0 = [q0;
-      dq0] ;
- 
-% Simulate dynamics
-[t_sol, x_sol] = ode45(@double_pendulum_dynamics, [0 1000], z0) ;
-
-hold on
-nexttile ; plot(t_sol, rad2deg(x_sol(:,2))) ; legend('th') %[x_sol(:,1)/100, rad2deg(x_sol(:,2))]
-xlabel('Time (s)') ; ylabel('deg') ;
-nexttile
-plot(t_sol, x_sol(:,1)); legend('x')
-xlabel('Time (s)') ; ylabel('x (m)') ;
-
-%animate_pendulum(t_sol, x_sol) ;
-
 %% functions
-
-%damping ratio and natural frequency
-
-function dz = double_pendulum_dynamics(t, z, params)
-    global params;
-
-    % Extract coordinates
-    q = z(1:2) ;
-    dq = z(3:4) ;
-    x = q(1) ; th = q(2) ;
-    dx = dq(1) ; dth = dq(2) ;
-    
-    % System constants
-    m1=1 ; m2=0.5; l=1; g=9.81; 
-
-    D = auto_D(l,m1,m2,th) ;
-    C = auto_C(dth,l,m2,th);
-    G = auto_G(g,l,m2,th) ;
-    B = auto_B() ;
-    
-    f = [dq ;
-         inv(D)*( -C*dq - G)] ;
-    g = [zeros(2,1) ;
-         inv(D)*B] ;
-    
-    u = FeedbackControl(q, dq, f, g, params,t) ;
-    
-    dz = f + g*u ;
-end
 
 function th_des = calculateTheta(x_des, pos_x, t, kpt, kdt)
 

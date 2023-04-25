@@ -363,7 +363,7 @@ class actuator():
         #Find theta
         theta = self.getTheta()
         #Calc errors
-        theta_error = abs(self.lastTheta - theta)/self.dt
+        theta_error = self.lastTheta - theta/self.dt
         x_error = abs(self.last_x_pos - self.x_pos)/self.dt
 
         #Control values
