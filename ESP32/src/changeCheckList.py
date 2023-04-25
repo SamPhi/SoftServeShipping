@@ -163,14 +163,14 @@ class actuator():
     global lock
     def __init__(self):
         """ LIMIT SWITCH SETUP """
-        self.LS1 = Pin(4, Pin.IN, Pin.PULL_UP)
-        self.LS2 = Pin(16, Pin.IN, Pin.PULL_UP)
-        self.startSensor = Pin(17, Pin.IN, Pin.PULL_UP)  # not setup for hall effect
-        self.endSensor = Pin(21, Pin.IN, Pin.PULL_UP)  # not setup for hall effect
+        self.LS1 = Pin(4, Pin.IN, Pin.PULL_UP) #DONE
+        self.LS2 = Pin(16, Pin.IN, Pin.PULL_UP) #DONE
+        self.startSensor = Pin(17, Pin.IN, Pin.PULL_UP) #DONE
+        self.endSensor = Pin(21, Pin.IN, Pin.PULL_UP)#DONE
 
         """ GANTRY (HORIZONTAL) MOTOR SETUP """
-        self.IN1 = Pin(25, mode=Pin.OUT)
-        self.IN2 = Pin(26, mode=Pin.OUT)
+        self.IN1 = Pin(25, mode=Pin.OUT) #DONE
+        self.IN2 = Pin(26, mode=Pin.OUT) #DONE
         # theoretically 70 percent is optimal motor power for running long term
         self.maxMotorPower = 99
         self.speed_as_percent = 0
@@ -363,7 +363,7 @@ class actuator():
         #Find theta
         theta = self.getTheta()
         #Calc errors
-        theta_error = self.lastTheta - theta/self.dt
+        theta_error = abs(self.lastTheta - theta)/self.dt
         x_error = abs(self.last_x_pos - self.x_pos)/self.dt
 
         #Control values
