@@ -14,6 +14,10 @@ actuator::actuator() {
   ledcAttachPin(BIN_1, ledChannel_1); // attach the channels to the GPIOs to be controlled
   ledcAttachPin(BIN_2, ledChannel_2);
   //JOYSTICK
+  pinMode(x_key, INPUT);
+  pinMode(y_key, INPUT);
+  //Potentiometer
+  pinMode(angleSensor, INPUT);
 }
 
 //Checks left limit switch, returns true if pressed
@@ -68,3 +72,60 @@ void actuator::writeMotors(int PWM){
     ledcWrite(ledChannel_2, LOW);
   }
 }
+
+void actuator::manualMovement(){
+  //Get joystick val
+  int input = map((analogRead(x_key)),0,3600,-1023,1023);
+  //Check if joystick val in deadband, actuate if not
+  if (abs(input) > deadBand){
+  writeMotors(input);
+  }
+  else{
+    writeMotors(0);
+  }
+}
+
+bool actuator::homingFunction(){
+  if((!leftHomed) && (!resetZero)){
+    writeMotors(-homingSpeed);
+    leftHomed = checkLimLeft();
+    if(leftHomed){
+      zeroPos = x_pos;
+      resetZero = true;
+    }
+    return false;
+  }
+  else if((!rightHomed) && (leftHomed)){
+    writeMotors(homingSpeed);
+    rightHomed = checkLimRight();
+    return false;
+  }
+  else if ((rightHomed)&&(leftHomed)){
+    writeMotors(0);
+    farRight = x_pos;
+    rightHomed = false;
+    leftHomed = false;
+    return true;
+  }
+}
+
+bool actuator::moveToPosition(int xcoord){
+  if((x_pos > (xcoord+tol)) && (!checkLimLeft())){
+    writeMotors(-homingSpeed);
+    return false;
+  }
+  else if ((x_pos<(xcoord-tol) && (!checkLimRight()))){
+    writeMotors(homingSpeed);
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
+//Returns theta in degrees - CCW positive, CW negative
+float actuator::getTheta(){
+  return (analogRead(angleSensor)-center)/oneDegInCounts;
+}
+
+

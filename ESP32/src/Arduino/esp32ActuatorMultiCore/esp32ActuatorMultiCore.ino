@@ -6,11 +6,15 @@
 #include <WiFi.h>
 #include <ArduinoJson.h> //NEEDS TO BE VERSION 5 NOT 6
 #include <actuator.h>
+#include <esp32.h>
 
 //Actuator setup
 actuator myActuator;
 //Actuator setup over
 
+//state machine setup
+esp32 myESP32;
+//stae nmachine setup over
 
 //Multi core setup
 TaskHandle_t Task1;
@@ -43,7 +47,6 @@ void setup() {
   //Inter core comms setup
   xMutex = xSemaphoreCreateMutex();  // crete a mutex object
 
-  
   Serial.begin(115200); 
 
 //Encoder setup  
@@ -81,39 +84,28 @@ void Task1code( void * pvParameters ){
   }
 }
 
-bool homed = false;
-bool atPos = false;
 
 void loop() {
   
   //Send/recieve data
-  send_data(1,2,false,false,3,client);
-  recieve_data(client);
+  send_data(myESP32,client);
+  recieve_data(myESP32,client);  
 
   //Update encoder value
   if (xSemaphoreTake (xMutex, portMAX_DELAY)){
     //Serial.println("Mutex acquired core 1");
     enc_core1 = enc_shared;
     xSemaphoreGive (xMutex);
+    myActuator.x_pos = enc_core1;
   }
 
-  //Actuator testing
-  myActuator.x_pos = enc_core1;
-  if(!homed){
-    homed = myActuator.homingFunction();
-  }
-  else if (!atPos){
-    Serial.println(myActuator.farRight);
-    Serial.println(myActuator.zeroPos);
-    atPos = myActuator.moveToPosition(50);
-  }
-  else{
-    Serial.println(myActuator.getTheta());
-    myActuator.manualMovement();
-  }
-  //Print statements   
-  //Serial.println(myActuator.x_pos);
-  //delay(500);
+  //ESP32 commands
+  myESP32.updatePhysicalVals();
+  myESP32.getstate();
+  myESP32.actions();
+  Serial.println(myESP32.state);
+  Serial.println(myESP32.phone_state);
+    
 }
 
 //Connect to wifi network
@@ -144,15 +136,15 @@ WiFiClient start_client(){
 }
 
 //Send data over socket
-void send_data(int x_pos, int y_pos, bool homed, bool finished, int theta, WiFiClient client){
+void send_data(esp32 myESP32, WiFiClient client){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& arrToSend = jsonBuffer.createObject();
 
-  arrToSend["x_pos"] = x_pos;
-  arrToSend["y_pos"] = y_pos;
-  arrToSend["homed"] = homed;
-  arrToSend["finished"] = finished;
-  arrToSend["theta"] = theta;
+  arrToSend["x_pos"] = myESP32.x_pos;
+  arrToSend["y_pos"] = 0;
+  arrToSend["homed"] = myESP32.homed;
+  arrToSend["finished"] = myESP32.finished;
+  arrToSend["theta"] = myESP32.theta;
 
   char data[100];
   arrToSend.printTo(data);
@@ -161,7 +153,7 @@ void send_data(int x_pos, int y_pos, bool homed, bool finished, int theta, WiFiC
 
 //Recieve data over socket
 
-void recieve_data(WiFiClient client){
+void recieve_data(esp32 myESP32, WiFiClient client){
   StaticJsonBuffer<200> jsonBuffer;
   char json[80];
   client.readBytesUntil('\n',json,80);
@@ -176,11 +168,16 @@ void recieve_data(WiFiClient client){
   //if(!root.success()){
   //  return "FAIL";     
   //}
+
   int x_des = root["x_des"];
   int y_des = root["y_des"];
-  String state = root["state"];
+  const char* state = root["state"]; //NO WAY THIS WORKS
   bool cancel = root["cancel"];
-  //Serial.println(state);
+
+
+  myESP32.x_des = x_des;
+  myESP32.phone_state = state;
+  myESP32.cancel = cancel;
 }
 
 

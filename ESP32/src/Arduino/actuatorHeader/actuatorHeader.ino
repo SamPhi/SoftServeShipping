@@ -5,11 +5,25 @@
 
 class actuator {
 public: //Defines variables/functions that a sketch can use
+  //Initializer
   actuator();
+  //HALL EFFECT SENSOR
   //HALL EFFECT SENSOR
   bool checkStart(); //Checks if left hall effect sensor triggered, returns true if so
   bool checkEnd(); //Checks if right hall effect sensor triggered, returns true if so
-  //JOYSTICK
+  void writeMotors(int PWM); //Sets PWM value to motor, checking lim switches
+  //Manual movement
+  void manualMovement(); //Moves gantry based on joystick input
+  //x_pos
+  volatile int x_pos = 0;
+  //Homing
+  int farRight = 0; //Value of encoder at far right, to be updated during homing
+  int zeroPos = 0; //Value of encoder at far left, to be updated during homing
+  bool homingFunction(); //Homing function
+  bool moveToPosition(int xcoord); //Moves to xcoord
+  //Potentiometer
+  float getTheta(); //Returns angle in degrees, center = 0, CCW = positive, CW = negative
+
 
 
 private: //Defines variables/functions only accessbile to actuator class
@@ -28,9 +42,22 @@ private: //Defines variables/functions only accessbile to actuator class
   const int ledChannel_1 = 1; //PWM channel 1
   const int ledChannel_2 = 2; //PWM channel 2
   const int resolution = 8; //PWM resolution
-  void writeMotors(int PWM); //Sets PWM value to motor, checking lim switches
-
   //JOYSTICK
+  const int x_key = 34; //Pin for joystick in X
+  const int y_key = 33; //Pin for joystick in Y
+  const int deadBand = 15; //Deadband for joysticks
+  //Homing
+  const int homingSpeed = 600; //PWM value for homing function
+  bool leftHomed = false; //flag for homing function to check if homed left
+  bool rightHomed = false; //Flag for homing function to check if homed right
+  bool resetZero = false; //Flag to check if zero pos needs to be reset during homing
+  //MoveToPosition
+  const int tol = 15;
+  //Potentiometer
+  const int angleSensor = 32;
+  const float center = 1863.5;
+  const float oneDegInCounts = 10.93;
+
 
 
 
