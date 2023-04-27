@@ -35,7 +35,7 @@ class automatic_frame(tk.Frame):
         self.thetaLabel.pack(pady=20)
 
         self.button1 = tk.Button(self, text="Cancel",
-                            command=lambda: [controller.changeState("thankyou"),controller.setCancelTrue()])
+                            command=lambda: [controller.buttonState("thankyou"),controller.setCancelTrue()])
         self.button1.pack()
 
         #TODO Add input for x_des, y_des

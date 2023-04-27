@@ -28,7 +28,6 @@ class gamePlayer(tk.Tk):
 
 
         # initialize state variables
-        self.lastState = "select"
         self.cancel = False
         self.x_des = 0  # Desired x position - set default to target location for actual thing
         self.y_des = 0  # desired y position - set default to target location for actual thing
@@ -76,79 +75,32 @@ class gamePlayer(tk.Tk):
             # will be the one that is visible.
             frame.grid(row=0, column=0, sticky="nsew")
 
-    def getState(self):
-        self.lastState = self.state;
-        if self.state == "manual" and self.finished == True:
-            self.state = "thankyou"
-            return
-        elif self.state == "automatic" and self.finished == True:
-            self.state = "thankyou"
-            return
-        elif self.state == "thankyou" and self.homed == True:
-            return
+    def changeState(self, newState):
+        self.newState = newState
+
+    def updater(self, newState):
+        # Updater acts as the state machine for the system
+
+        # update maxTheta for score tracking
+        self.updateMaxTheta()
+
+        # update newState for non-button related events
+        #If no non-button related events, returns newState unchanged
+        if newState == self.state:
+            newState = self.updateStateNonButton(newState)
+
+        # The block below resets flags, updates the state, and calls this update functions again
+        if newState != self.state:
+            # update appropriate variables for change of state
+            self.stateChanged(newState)
+            # assign newState to state and update
+            self.state = newState
+            self.updater(newState)
+            # raise approrpaite frame for the current state for GUI if previous and next state are same
+        elif newState == self.state:
+            self.chooseFrame(newState)
         else:
-            return
-
-    def buttonState(self, buttonState):
-        self.lastState = self.state
-        self.state = buttonState
-
-    def actions(self):
-        #Show relevant frame for current state
-        self.chooseFrame()
-        #Perform underlying tasks
-        if self.state == "select":
-            if self.finished == True:
-                self.finished = False
-            #Tasks to run once when enter state:
-            if self.state != self.lastState:
-                self.updateScoreArr("Test Name", self.lastRunTime, self.lastMaxTheta) #Updtae score array
-                self.maxTheta = 0 #reset max theta
-        elif self.state == "manual":
-            if self.homed == True:
-                self.homed = False
-            ##To happen every run:
-            self.updateMaxTheta() #Check for maxTheta
-            if self.state != self.lastState: #To happen once when enter state
-                self.frames["manual_frame"].swingAnim.show() #show swing animation
-                self.runTimer.startTimer() #start timer
-        elif self.state == "automatic":
-            if self.homed == True:
-                self.homed = False
-            #To run every loop
-            self.updateMaxTheta() #Update max theta
-            if self.state != self.lastState: #To run once when enter state
-                self.runTimer.startTimer() #start timer
-        elif self.state == "thankyou":
-            print("In thank you")
-            print(self.lastState)
-            print(self.state)
-            if self.lastState == "manual":
-                print("---------------------------------------------------------------- In last state condition")
-                self.frames["manual_frame"].swingAnim.hide()  # Hide swing animation
-            elif self.lastState == "automatic":
-                A = 5  # TODO: self.frames["automatic_frame"].swingAnim.hide()
-            if self.state != self.lastState: #To run once when enter state
-                self.lastRunTime = self.runTimer.getTime() #Update time for score array
-                self.lastMaxTheta = self.maxTheta #update max theta for score array
-                self.runTimer.resetTimer() #Reset timer for next time
-
-        return
-
-    # helper function to update Frame based on state
-    def chooseFrame(self):
-        # The 'show_frame' function calls this update function as well, hence it is continually called
-        # self.time = getTimeString()
-        if self.state == "select":
-            self.show_frame("select_frame")
-        elif self.state == "manual":
-            self.show_frame("manual_frame")
-        elif self.state == "automatic":
-            self.show_frame("automatic_frame")
-        elif self.state == "thankyou":
-            self.show_frame("thankyou_frame")
-        else:
-            print("Error: State != select|manual|automatic|thankyou")
+            print("Error: 'newState == self.state' & 'newState!=self.state' both false")
 
     # Helper function to display frame
     def show_frame(self, page_name):
@@ -165,6 +117,56 @@ class gamePlayer(tk.Tk):
             self.maxTheta = abs(self.theta)
         return
 
+    # helper function to update Frame based on state
+    def chooseFrame(self, newState):
+        # If the old state is the same as the current state, it raises the corresponding frame for the current state
+        # The 'show_frame' function calls this update function as well, hence it is continually called
+        # self.time = getTimeString()
+        if self.state == "select":
+            self.show_frame("select_frame")
+        elif self.state == "manual":
+            self.show_frame("manual_frame")
+        elif self.state == "automatic":
+            self.show_frame("automatic_frame")
+        elif self.state == "thankyou":
+            self.show_frame("thankyou_frame")
+        else:
+            print("Error: State != select|manual|automatic|thankyou")
+
+    # helper function for change conditions/actions of state machine
+    def stateChanged(self, newState):
+        if newState == "manual":
+            self.maxTheta = 0
+            self.frames["manual_frame"].swingAnim.show()
+            self.runTimer.startTimer()
+        elif newState == "automatic":
+            self.maxTheta = 0
+            #self.frames["automatic_frame"].swingAnim.show()
+            self.runTimer.startTimer()
+        elif newState == "thankyou":
+            if self.state == "manual":
+                self.frames["manual_frame"].swingAnim.hide()
+            #elif self.state == "automatic":
+            #    self.frames["automatic_frame"].swingAnim.hide()
+            self.lastRunTime = self.runTimer.getTime()
+            self.lastMaxTheta = self.maxTheta
+            self.runTimer.resetTimer()
+        elif newState == "select":
+            #Maybe acc do nothing
+            self.updateScoreArr("Test Name", self.lastRunTime, self.lastMaxTheta)
+        else:
+            print("error in changeState: newState!= a valid state name")
+
+    def updateStateNonButton(self,newState):
+        #updates for the three non-button cases as per the state machine diagram
+        if newState == "manual" and self.finished == True:
+            return "thankyou"
+        if newState == "automatic" and self.finished == True:
+            return "thankyou"
+        if newState == "thankyou" and self.homed == True:
+            return "select"
+        else:
+            return newState
 
     # Updates score array to include values from last run.
     def updateScoreArr(self, lastName, lastTime, lastMaxTheta):

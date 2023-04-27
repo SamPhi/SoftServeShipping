@@ -34,6 +34,7 @@ def send_data(sock, x_des, y_des, state, cancel):
     message = phoneDataArr.encode()
     #print('sending {!r}'.format(message))
     sock.sendall(message)
+    sock.sendall("\n".encode())
 
 def receive_data(sock,game):
     # Receive data
@@ -57,11 +58,12 @@ if __name__ == "__main__":
     #start our server for ESP32 comms
     sock = start_server()
     while True:
-        newState = game.newState
-        game.updater(newState)
+        game.actions()
+        game.getState()
         game.update()
+        print("last state = " + game.lastState)
         #print("Starting send data")
-        print(game.state)
+        print("current state = " + game.state)
         send_data(sock, game.x_des, game.y_des, game.state, game.cancel)
         #print("Finished send data")
         #print("Starting recieveing ESP32 data")

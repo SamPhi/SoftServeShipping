@@ -30,7 +30,7 @@ class manual_frame(tk.Frame):
 
         # Create cancel button
         self.button1 = tk.Button(self, text="I give up!", height=3, width=20, font=controller.title_2_font,
-                                 command=lambda: [controller.changeState("thankyou"), controller.setCancelTrue()])
+                                 command=lambda: [controller.buttonState("thankyou"), controller.setCancelTrue()])
         self.button1.pack(pady=20)
 
         #Create theta label

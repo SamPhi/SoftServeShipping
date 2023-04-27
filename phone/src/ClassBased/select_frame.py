@@ -23,8 +23,8 @@ class select_frame(tk.Frame):
 
         #Buttons for manual and auto mode:
         self.button1 = tk.Button(self, text="Manual Mode", height = 3, width = 20,font=controller.title_2_font,
-                            command=lambda: controller.changeState("manual"))
-        self.button2 = tk.Button(self, text="Automatic Mode", height = 3, width = 20, font=controller.title_2_font, command=lambda: controller.changeState("automatic"))
+                            command=lambda: controller.buttonState("manual"))
+        self.button2 = tk.Button(self, text="Automatic Mode", height = 3, width = 20, font=controller.title_2_font, command=lambda: controller.buttonState("automatic"))
 
         self.button1.pack(pady=10)
         self.button2.pack(pady=10)

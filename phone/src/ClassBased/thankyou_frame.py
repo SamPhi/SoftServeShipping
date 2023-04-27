@@ -20,7 +20,7 @@ class thankyou_frame(tk.Frame):
                          font=controller.title_font, wraplength=(controller.width*7/8), justify="center")
         self.label.pack(side="top", fill="x", pady=10)
         self.button1 = tk.Button(self, text="Homed",
-                            command=lambda: controller.changeState("select"))
+                            command=lambda: controller.buttonState("select"))
         self.button1.pack()
 
     def update(self, time):
