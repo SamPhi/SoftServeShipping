@@ -102,17 +102,16 @@ bool actuator::homingFunction(){
     rightHomed = checkLimRight();
     return false;
   }
-  else if ((rightHomed) && (leftHomed) && (!moveToStart)){
+  else if ((rightHomed) && (leftHomed) && (!moveToStart)) {
     farRight = x_pos;
-    int startingPoint = (farRight + abs(zeroPos))/8 + zeroPos;
+    int startingPoint = int((farRight + abs(zeroPos))/8 + zeroPos);
     moveToStart = moveToPosition(startingPoint);
     return false;
   }
-
-  else if ((rightHomed)&&(leftHomed)){
+  else if ((rightHomed)&&(leftHomed) && (moveToStart){
     writeMotors(0);
-    farRight = x_pos;
     rightHomed = false;
+    resetZero = false;
     leftHomed = false;
     moveToStart = false;
     return true;
