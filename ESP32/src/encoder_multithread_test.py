@@ -87,7 +87,7 @@ def core0_thread():
         time.sleep(0.1)
         print("myActuator.x_pos = " + str(myActuator.x_pos))
         #Run garbage collection and print how much memory is being used
-        print(free(True))
+        print(free(True)) #DO NOT COMMENT OUT. free(True) performs garbage collection
 
 
 
@@ -95,13 +95,16 @@ def core1_thread():
     global lock
     global x_pos_enc
     Encoder = encoder()
+    counter = 0
     while True:
         # Update Encoder.temp_enc_val to current reading from encoder
         Encoder.readEncoder()
         if not lock.acquire():
+            print("core1_thread looped " + str(counter) + " since last x_pos_enc call")
             pass
         else:
             #TODO: May need to add lock.acquire here, not sure if 'if not lock.acquire' does it automatically
+            counter += 1  # Add one to counter
             #If we have acquired lock, we should update x_pos_enc value
             x_pos_enc = Encoder.temp_enc_val
             lock.release()

@@ -23,15 +23,15 @@ def start_server():
 #write_Phone function sends data to laptop. To be called multiple times during operation
 def write_Phone(positioanlData):
 	#global client_socket #must define as global to be accessible in other functions
-	#positionalDataArr = json.dumps({"pos_x": pos_x, "pos_y":pos_y,"LS1":LS1,"LS2":LS2,"theta":theta}) #uses Json to create dictionary that can be read by phone at other end
-    positionalDataArr = input("Go:")
+	positionalDataArr = json.dumps({"pos_x": pos_x, "pos_y":pos_y,"LS1":LS1,"LS2":LS2,"theta":theta}) #uses Json to create dictionary that can be read by phone at other end
+    #positionalDataArr = input("Go:")
     client_socket.send(positionalDataArr.encode())
     #client_socket.close() #closes connection - to be deleted?
 
 def read_Phone():
     #global client_socket
     data = client_socket.recv(1024)
-    #data = json.loads(data.decode())
+    data = json.loads(data.decode())
     data = data.decode()
     #x_des = data.get("x_des")
     #y_des = data.get("y_des")
