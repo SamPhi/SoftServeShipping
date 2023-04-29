@@ -122,11 +122,11 @@ bool actuator::homingFunction(){
 
 
 bool actuator::moveToPosition(int xcoord){
-  if((x_pos > (xcoord+tol)) && (!checkLimLeft())){
+  if((x_pos > (xcoord+tol)) && (!checkLimRight())){
     writeMotors(-homingSpeed);
     return false;
   }
-  else if ((x_pos<(xcoord-tol) && (!checkLimRight()))){
+  else if ((x_pos<(xcoord-tol) && (!checkLimLeft()))){
     writeMotors(homingSpeed);
     return false;
   }
