@@ -24,7 +24,9 @@ actuator::actuator() {
 bool actuator::checkLimLeft() {
   if (digitalRead(LS1) == LOW) {
     return true;}
-  else {return false;}
+  else {
+    return false;
+  }
 }
 
 //Checks right limit switch, returns true if pressed
@@ -86,7 +88,7 @@ void actuator::manualMovement(){
 }
 
 bool actuator::homingFunction(){
-  if((!leftHomed) && (!resetZero)){
+  if((!leftHomed) && (!resetZero)&&(!moveToStart){ ////////Add bool move to start
     writeMotors(-homingSpeed);
     leftHomed = checkLimLeft();
     if(leftHomed){
@@ -95,19 +97,30 @@ bool actuator::homingFunction(){
     }
     return false;
   }
-  else if((!rightHomed) && (leftHomed)){
+  else if((!rightHomed) && (leftHomed) && (!moveToStart){
     writeMotors(homingSpeed);
     rightHomed = checkLimRight();
     return false;
   }
+  else if ((rightHomed) && (leftHomed) && (!moveToStart) {
+    farRight = x_pos;
+    int startingPoint = (farRight + abs(zeroPos))/8 + zeroPos;
+    moveToStart = moveToPosition(startingPoint);
+    return false;
+  }
+
   else if ((rightHomed)&&(leftHomed)){
     writeMotors(0);
     farRight = x_pos;
     rightHomed = false;
     leftHomed = false;
+    moveToStart = false;
     return true;
   }
 }
+
+
+
 
 bool actuator::moveToPosition(int xcoord){
   if((x_pos > (xcoord+tol)) && (!checkLimLeft())){

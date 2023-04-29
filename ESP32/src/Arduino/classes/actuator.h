@@ -52,6 +52,7 @@ private: //Defines variables/functions only accessbile to actuator class
   bool leftHomed = false; //flag for homing function to check if homed left
   bool rightHomed = false; //Flag for homing function to check if homed right
   bool resetZero = false; //Flag to check if zero pos needs to be reset during homing
+  bool moveToStart = false; //flag to check if moved to starting position <-----------------------------------------
   //MoveToPosition
   const int tol = 15;
   //Potentiometer
