@@ -77,7 +77,7 @@ void actuator::writeMotors(int PWM){
 
 void actuator::manualMovement(){
   //Get joystick val
-  int input = map((analogRead(x_key)),0,3600,-1023,1023);
+  int input = -(map((analogRead(x_key)),0,3600,-1023,1023));
   //Check if joystick val in deadband, actuate if not
   if (abs(input) > deadBand){
   writeMotors(input);
