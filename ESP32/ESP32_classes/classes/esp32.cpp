@@ -77,22 +77,15 @@ void esp32::actions() {
     if (cancel == true) {
       cancel = false;
     }
-    if (partHomed == false && homed == false) {
-      partHomed = myActuator.homingFunction();
+    if (homed == false) {
+      homed = myActuator.homingFunction();
      // if (partHomed = true) {
     //    partHomed = true;////Questionable!!!!!!!
      // }
     }
-    else {
-      //cout << getStartPos();
-      bool moveToStart = myActuator.moveToPosition(getStartPos());
-      if (moveToStart == true) {
-        homed = true;
-        partHomed = true;
-      }
-    }
   }
-  }
+ }
+ 
 
   bool esp32::checkFinished(){
     if (finished == true) {

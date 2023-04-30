@@ -24,6 +24,7 @@ public: //Defines variables/functions that a sketch can use
   //Potentiometer
   float getTheta(); //Returns angle in degrees, center = 0, CCW = positive, CW = negative
   bool autoMove();
+  bool checkLimRight(); //Internal function to check if right lim switch hit, returns true if so
 
 
 
@@ -32,7 +33,6 @@ private: //Defines variables/functions only accessbile to actuator class
   int LS1=4; //Lim switch left pin
   int LS2=16; // Lim switch right pin
   bool checkLimLeft(); //Internal function to check if Left Lim siwtch hit, returns true if so
-  bool checkLimRight(); //Internal function to check if right lim switch hit, returns true if so
   //HALL EFFECT SENSOR
   int startSensor=17; //Switch for start sensor
   int endSensor=21; //Switch for end sensor

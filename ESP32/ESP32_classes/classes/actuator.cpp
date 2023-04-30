@@ -88,27 +88,29 @@ void actuator::manualMovement(){
 }
 
 bool actuator::homingFunction(){
-  if((!leftHomed) && (!resetZero)&&(!moveToStart)){ ////////Add bool move to start
+  if ((!leftHomed) && (!rightHomed) && (!resetZero) && (!moveToStart)) { ////////Add bool move to start
     writeMotors(-homingSpeed);
     leftHomed = checkLimLeft();
-    if(leftHomed){
+    if (leftHomed) {
       zeroPos = x_pos;
       resetZero = true;
     }
     return false;
   }
-  else if((!rightHomed) && (leftHomed) && (!moveToStart)){
+  
+  else if ((leftHomed) && (!rightHomed) && (resetZero) && (!moveToStart)) {
     writeMotors(homingSpeed);
     rightHomed = checkLimRight();
+    farRight = x_pos;
     return false;
   }
-  else if ((rightHomed) && (leftHomed) && (!moveToStart)) {
-    farRight = x_pos;
+
+  else if ((rightHomed) && (leftHomed) && (resetZero) && (!moveToStart)) {
     int startingPoint = int((farRight + abs(zeroPos))/8 + zeroPos);
     moveToStart = moveToPosition(startingPoint);
     return false;
   }
-  else if ((rightHomed)&&(leftHomed) && (moveToStart){
+  else if ((rightHomed)&&(leftHomed)&& (resetZero) && (moveToStart)){
     writeMotors(0);
     rightHomed = false;
     resetZero = false;
@@ -116,17 +118,21 @@ bool actuator::homingFunction(){
     moveToStart = false;
     return true;
   }
+  //else {
+  //  writeMotors(0);
+  //  return false;
+  //}
 }
 
 
 
 
 bool actuator::moveToPosition(int xcoord){
-  if((x_pos > (xcoord+tol)) && (!checkLimRight())){
+  if(x_pos > (xcoord+tol)){
     writeMotors(-homingSpeed);
     return false;
   }
-  else if ((x_pos<(xcoord-tol) && (!checkLimLeft()))){
+  else if (x_pos<(xcoord-tol)){
     writeMotors(homingSpeed);
     return false;
   }
