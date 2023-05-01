@@ -77,6 +77,9 @@ void setup() {
   encoder1.attachHalfQuad(39, 36); // Attache pins for use as encoder pins  M1(36,39)   M2(4,16)   M3(17,21)
   encoder1.setCount(0);  // set starting count value after attaching
 
+  // Callibrate potentiometer
+  myESP32.myActuator.callibratePot();
+
   //create a task that will be executed in the Task1code() function, with priority 1 and executed on core 0
   xTaskCreatePinnedToCore(
                     Task1code,   /* Task function. */
@@ -97,6 +100,7 @@ void Task1code( void * pvParameters ){
   for(;;){
     //ESP32 commands
     myESP32.x_pos = encoder1.getCount(); //Update encoder
+    //MAYBE ADD myESP32.myActuator.x_pos here??
     myESP32.updatePhysicalVals(); //Update other vals
     myESP32.getstate(); //Update state
     myESP32.actions(); //Act
