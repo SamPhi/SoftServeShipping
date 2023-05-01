@@ -45,9 +45,18 @@ bool actuator::checkStart() {
 
 //Returns true if right hall effect sensor triggered, otherwise false
 bool actuator::checkEnd() {
-  if (digitalRead(endSensor) == LOW) {
-    return true;}
-  else {return false;}
+  if ((digitalRead(endSensor) == LOW) && (debounceCounter > debounceTime)) {
+    debounceCounter = 0;
+    return true;
+  }
+  else if ((digitalRead(endSensor) == LOW) && (debounceCounter <= debounceTime)) {
+    debounceCounter += 1;
+    return false;
+  }
+  else {
+    debounceCounter = 0;
+    return false;
+  }
 }
 
 //Drives motors - checks PWM in operating range and for limit switch hits
@@ -106,7 +115,7 @@ bool actuator::homingFunction(){
   }
 
   else if ((rightHomed) && (leftHomed) && (resetZero) && (!moveToStart)) {
-    int startingPoint = int((farRight + abs(zeroPos))/8 + zeroPos);
+    int startingPoint = farRight-int((abs(farRight) + abs(zeroPos))/8);
     moveToStart = moveToPosition(startingPoint);
     return false;
   }
@@ -123,9 +132,6 @@ bool actuator::homingFunction(){
   //  return false;
   //}
 }
-
-
-
 
 bool actuator::moveToPosition(int xcoord){
   if(x_pos > (xcoord+tol)){
@@ -148,6 +154,15 @@ float actuator::getTheta(){
 
 bool actuator::autoMove(){
     return false;
+}
+
+void actuator::callibratePot() {
+  int total;
+  for (int i = 0; i < 10000; i++) {
+    total += analogRead(angleSensor);
+  }
+  center = total / 10000;
+  return;
 }
 
 

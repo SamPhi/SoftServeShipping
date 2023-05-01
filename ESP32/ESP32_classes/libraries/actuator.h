@@ -25,6 +25,7 @@ public: //Defines variables/functions that a sketch can use
   float getTheta(); //Returns angle in degrees, center = 0, CCW = positive, CW = negative
   bool autoMove();
   bool checkLimRight(); //Internal function to check if right lim switch hit, returns true if so
+  void callibratePot();
 
 
 
@@ -48,7 +49,7 @@ private: //Defines variables/functions only accessbile to actuator class
   const int y_key = 33; //Pin for joystick in Y
   const int deadBand = 15; //Deadband for joysticks
   //Homing
-  const int homingSpeed = 600; //PWM value for homing function
+  const int homingSpeed = 500; //PWM value for homing function
   bool leftHomed = false; //flag for homing function to check if homed left
   bool rightHomed = false; //Flag for homing function to check if homed right
   bool resetZero = false; //Flag to check if zero pos needs to be reset during homing
@@ -57,8 +58,12 @@ private: //Defines variables/functions only accessbile to actuator class
   const int tol = 15;
   //Potentiometer
   const int angleSensor = 32;
-  const float center = 1863.5;
+  float center = 1863.5;
   const float oneDegInCounts = 10.93;
+
+  //for debounce
+  const int debounceTime = 10;
+  volatile int debounceCounter=0;
 
 
 

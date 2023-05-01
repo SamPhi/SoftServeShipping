@@ -100,7 +100,7 @@ void Task1code( void * pvParameters ){
   for(;;){
     //ESP32 commands
     myESP32.x_pos = encoder1.getCount(); //Update encoder
-    //MAYBE ADD myESP32.myActuator.x_pos here??
+    myESP32.myActuator.x_pos = myESP32.x_pos;
     myESP32.updatePhysicalVals(); //Update other vals
     myESP32.getstate(); //Update state
     myESP32.actions(); //Act
@@ -153,16 +153,16 @@ void loop() {
 //Connect to wifi network
 void phone_connect(){
     WiFi.begin(ssid, password);
-    Serial.println("\nConnecting");
+    //Serial.println("\nConnecting");
 
     while(WiFi.status() != WL_CONNECTED){
-        Serial.print(".");
+        //Serial.print(".");
         delay(100);
     }
 
-    Serial.println("\nConnected to the WiFi network");
-    Serial.print("Local ESP32 IP: ");
-    Serial.println(WiFi.localIP());
+    //Serial.println("\nConnected to the WiFi network");
+    //Serial.print("Local ESP32 IP: ");
+    //Serial.println(WiFi.localIP());
 }
 
 //Create client to communicate on server
@@ -170,10 +170,10 @@ WiFiClient start_client(){
   WiFiClient client;
 
   while (!client.connect(host,port)){
-    Serial.println("Connection to host failed, trying again");
+    //Serial.println("Connection to host failed, trying again");
     delay(1000);
   }
-  Serial.println("Successfully connected to server");
+  //Serial.println("Successfully connected to server");
   return client;
 }
 
@@ -182,11 +182,11 @@ void send_data(int x_pos,bool homed,bool finished,int theta, WiFiClient client){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& arrToSend = jsonBuffer.createObject();
 
-  arrToSend["x_pos"] = myESP32.x_pos;
+  arrToSend["x_pos"] = x_pos_core1;
   arrToSend["y_pos"] = 0;
-  arrToSend["homed"] = myESP32.homed;
-  arrToSend["finished"] = myESP32.finished;
-  arrToSend["theta"] = myESP32.theta;
+  arrToSend["homed"] = homed_core1;
+  arrToSend["finished"] = finished_core1;
+  arrToSend["theta"] = theta_core1;
 
   char data[100];
   arrToSend.printTo(data);
