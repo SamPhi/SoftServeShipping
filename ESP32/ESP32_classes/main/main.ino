@@ -9,7 +9,7 @@
 #include <esp32.h>
 
 //Actuator setup
-actuator myActuator;
+//actuator myActuator;
 //Actuator setup over
 
 //state machine setup
@@ -54,6 +54,9 @@ void setup() {
   encoder1.attachHalfQuad(39, 36); // Attache pins for use as encoder pins  M1(36,39)   M2(4,16)   M3(17,21)
   encoder1.setCount(0);  // set starting count value after attaching
 
+  //Callibrate pot
+  myESP32.myActuator.callibratePot();
+
   //create a task that will be executed in the Task1code() function, with priority 1 and executed on core 0
   xTaskCreatePinnedToCore(
                     Task1code,   /* Task function. */
@@ -96,17 +99,18 @@ void loop() {
     //Serial.println("Mutex acquired core 1");
     enc_core1 = enc_shared;
     xSemaphoreGive (xMutex);
-    myActuator.x_pos = enc_core1;
+    myESP32.myActuator.x_pos = enc_core1;
   }
 
   //ESP32 commands
   myESP32.updatePhysicalVals();
   myESP32.getstate();
   myESP32.actions();
-  Serial.println(myESP32.state);
-  Serial.println(myESP32.phone_state);
-  Serial.println(myESP32.cancel);
-  Serial.println(myESP32.checkFinished());
+  // Serial.println(myESP32.state);
+  // Serial.println(myESP32.phone_state);
+  // Serial.println(myESP32.cancel);
+  // Serial.println(myESP32.checkFinished());
+  Serial.println(myESP32.x_pos);
 }
 
 //Connect to wifi network
