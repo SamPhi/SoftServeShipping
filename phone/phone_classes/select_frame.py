@@ -21,11 +21,17 @@ class select_frame(tk.Frame):
                          font=controller.title_font, wraplength=(controller.width*7/8), justify="center")
         self.label.pack(side="top", fill="x", pady=50)
 
-        # Label for the how to play
+        # Label for what to do
         self.label = tk.Label(self,
-                              text="Enter your name and select manual mode to play yourself, or press automatic to watch the machine play",
+                              text="Move the container as quickly as you can with as little swing as possible!",
                               font=controller.title_2_font, wraplength=(controller.width * 7 / 8), justify="center")
-        self.label.pack(side="top", fill="x", pady=50)
+        self.label.pack(side="top", fill="x", pady=20)
+
+        # Label for the how to play
+        self.label2 = tk.Label(self,
+                              text="Select manual mode to play yourself, or click automatic to watch the machine play!",
+                              font=controller.title_2_font, wraplength=(controller.width * 7 / 8), justify="center")
+        self.label2.pack(side="top", fill="x", pady=20)
 
         #Text entry for manual mode
         self.nameEntry = tk.Entry(self, font=controller.title_2_font)

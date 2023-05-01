@@ -9,6 +9,8 @@ import gamePlayer
 import select_frame
 import manual_frame
 import thankyou_frame
+from PIL import ImageTk
+from PIL import Image
 
 
 
@@ -16,7 +18,7 @@ import thankyou_frame
 class swingAnimation(tk.Canvas):
     def __init__(self,parent, width):
         tk.Canvas.__init__(self,parent,width=width,height=width+200,bg="white")
-        self.armLength = 250
+        self.armLength = 350
         self.dx = 150
         self.dy = 150
         self.width = width
@@ -24,10 +26,10 @@ class swingAnimation(tk.Canvas):
         #Create stuff for finding lines to draw
         self.arm_coords = (0,0,0,self.armLength) #initial arm coords as x0, x1, y0, y1
         self.line0 = None
-        self.line1 = None
-        self.line2 = None
-        self.line3 = None
-        self.line4 = None
+        # self.line1 = None
+        # self.line2 = None
+        # self.line3 = None
+        # self.line4 = None
 
     #Creates points for the initial corners of four containers based on the coordinates of arm_coords
     @classmethod
@@ -72,20 +74,28 @@ class swingAnimation(tk.Canvas):
     def drawContainer(self,theta):
         ##Draws container
         if not self.line0:
-            self.line0 = self.create_line(self.getFinalCoords(theta), fill="red", width=35)
-        if not self.line1:
-            self.line1 = self.create_line(self.getPoints(theta)[0], fill="red", width=10)
-        if not self.line2:
-            self.line2 = self.create_line(self.getPoints(theta)[1], fill="red", width=10)
-        if not self.line3:
-            self.line3 = self.create_line(self.getPoints(theta)[2], fill="red", width=10)
-        if not self.line4:
-            self.line4 = self.create_line(self.getPoints(theta)[3], fill="red", width=10)
+            self.line0 = self.create_line(self.getFinalCoords(theta), fill="silver", width=5)
+        # if not self.line1:
+        #     self.line1 = self.create_line(self.getPoints(theta)[0], fill="red", width=10)
+        # if not self.line2:
+        #     self.line2 = self.create_line(self.getPoints(theta)[1], fill="red", width=10)
+        # if not self.line3:
+        #     self.line3 = self.create_line(self.getPoints(theta)[2], fill="red", width=10)
+        # if not self.line4:
+        #     self.line4 = self.create_line(self.getPoints(theta)[3], fill="red", width=10)
         self.coords(self.line0,self.getFinalCoords(theta))
-        self.coords(self.line1, self.getPoints(theta)[0])
-        self.coords(self.line2, self.getPoints(theta)[1])
-        self.coords(self.line3, self.getPoints(theta)[2])
-        self.coords(self.line4, self.getPoints(theta)[3])
+        # self.coords(self.line1, self.getPoints(theta)[0])
+        # self.coords(self.line2, self.getPoints(theta)[1])
+        # self.coords(self.line3, self.getPoints(theta)[2])
+        # self.coords(self.line4, self.getPoints(theta)[3])
+
+        #IMAGE STUFF
+        # Load an image in the script
+        self.img = ImageTk.PhotoImage(Image.open("container.png").resize((500,250)).rotate(-theta))
+
+        # Add image to the Canvas Items
+        self.image = self.create_image(10, 10, image=self.img)
+        self.move(self.image,self.getFinalCoords(theta)[2],self.getFinalCoords(theta)[3])
 
 
     def show(self):

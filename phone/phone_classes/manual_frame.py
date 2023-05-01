@@ -43,7 +43,6 @@ class manual_frame(tk.Frame):
         self.swingAnim = swingAnimation.swingAnimation(self,controller.width)
         self.swingAnim.pack(pady=(10,10))
 
-
     def update(self, time):
         # update label with time. Time is a string in format M:SS
         if self.timerLabel is None:
