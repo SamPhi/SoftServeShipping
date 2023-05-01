@@ -172,41 +172,41 @@ class actuator():
         self.IN1 = Pin(25, mode=Pin.OUT) #DONE
         self.IN2 = Pin(26, mode=Pin.OUT) #DONE
         # theoretically 70 percent is optimal motor power for running long term
-        self.maxMotorPower = 99
-        self.speed_as_percent = 0
-        self.motor = PWM(self.IN1, freq=25000, duty_u16=0)  # clockwise is motor high rev_0
-        self.rev_motor = PWM(self.IN2, freq=25000)
+        self.maxMotorPower = 99 #DEPRECATED
+        self.speed_as_percent = 0 #DEPRECATED
+        self.motor = PWM(self.IN1, freq=25000, duty_u16=0)  #DONE # clockwise is motor high rev_0
+        self.rev_motor = PWM(self.IN2, freq=25000) #DONE
 
         """ JOYSTICK SETUP """
-        self.button = Pin(15, Pin.IN, Pin.PULL_UP)
-        self.xStick = ADC(Pin(34))
-        self.yStick = ADC(Pin(33))
-        self.xStick.atten(ADC.ATTN_11DB)  # Full range: 3.3v
-        self.yStick.atten(ADC.ATTN_11DB)  # Full range: 3.3v
+        self.button = Pin(15, Pin.IN, Pin.PULL_UP) #DONE
+        self.xStick = ADC(Pin(34)) #DONE
+        self.yStick = ADC(Pin(33)) #DONE
+        self.xStick.atten(ADC.ATTN_11DB) #DEPRECATED - not needed in Arduino # Full range: 3.3v
+        self.yStick.atten(ADC.ATTN_11DB)  #DEPRECATED - not needed in Arduino # Full range: 3.3v
 
         # constants for running the joystick (manually calibrated)
-        self.minJoy = 142
+        self.minJoy = 142 #DEPRECATED - Arduino map function does this for us
         # medJoy = 1660
-        self.deadBand = 15
-        self.maxJoy = 3160
-        self.centerJoy = (self.maxJoy + self.minJoy) / 2
-        self.slope = self.maxMotorPower / (self.maxJoy - self.centerJoy)
+        self.deadBand = 15 #DONE
+        self.maxJoy = 3160 #DEPRECATED - Arduino map function does this for us
+        self.centerJoy = (self.maxJoy + self.minJoy) / 2 #DEPRECATED - Arduino map function does this for us
+        self.slope = self.maxMotorPower / (self.maxJoy - self.centerJoy) #DEPRECATED - Arduino map function does this for us
         # xStick.width(ADC.WIDTH_12BIT)
 
         """ homing flags setup"""
-        self.homingSpeed = 600
-        self.leftHomed = False
-        self.rightHomed = False
-        self.farRight = 0
-        self.x_pos = 0
-        self.resetZero = False
+        self.homingSpeed = 600 #DONE
+        self.leftHomed = False#DONE
+        self.rightHomed = False #DONE
+        self.farRight = 0 #DONE
+        self.x_pos = 0 #DONE
+        self.resetZero = False #DONE
+        self.zeroPos = 0 #DONE
 
         """ Move to X setup """
         self.positioned = False
         self.tol = 1
         
         """ Auto function helper"""
-        self.zeroPos = 0
         self.last_x_pos = 0
         self.massGantry = 1 #Kg
         self.massContainer = 0.5 #Kg
@@ -221,49 +221,49 @@ class actuator():
         self.Kd = 0.0001
         
         """Angle sensor setup"""
-        self.angleSensor = ADC(Pin(32)) #TODO: Change to pin in range GPIO 32-39
-        self.angleSensor.atten(ADC.ATTN_11DB)
+        self.angleSensor = ADC(Pin(32)) #TODO: Change to pin in range GPIO 32-39 #DONE
+        self.angleSensor.atten(ADC.ATTN_11DB) #DONE
 
-        #Empirically attained constants:
-        self.center = 1863.5
-        self.FortyFiveDeg = 1371.6
-        self.OneDeginCounts = (self.center-self.FortyFiveDeg)/45
+        #Empirically attained constants for angle sensing:
+        self.center = 1863.5 #DONE
+        self.FortyFiveDeg = 1371.6 #DONE
+        self.OneDeginCounts = (self.center-self.FortyFiveDeg)/45 #DONE
 
 
-    def horizontalPosition(self):
+    def horizontalPosition(self): #DEPRECATED - just call x_pos
         self.x_pos = x_pos_enc
         return self.x_pos
 
-    def getTheta(self):
+    def getTheta(self): #DONE
         ang = self.angleSensor.read()
         angDeg = (ang-self.center)/self.OneDeginCounts
         return angDeg
 
-    def checkLimLeft(self):
+    def checkLimLeft(self): #DONE
         if self.LS1.value() == 0:
             return True
         else:
             return False
 
-    def checkLimRight(self):
+    def checkLimRight(self): #DONE
         if self.LS2.value() == 0:
             return True
         else:
             return False
 
-    def checkStart(self):
+    def checkStart(self): #DONE
         if self.startSensor.value() == 0:
             return True
         else:
             return False
 
-    def checkEnd(self):
+    def checkEnd(self): #DONE
         if self.endSensor.value() == 0:
             return True
         else:
             return False
 
-    def checkFinished(self):
+    def checkFinished(self): #DEPRECATED - use checkEnd()
         # Helper function to check finished
         # TODO: Edit to account for debounce
         if self.checkEnd() == True:
@@ -271,15 +271,15 @@ class actuator():
         else:
             return False
 
-    def moveMotorRight(self, speed):
+    def moveMotorRight(self, speed): #DEPRECATED - just use writeMotors() function
         self.motor.duty(int(0))
         self.rev_motor.duty(int(speed))
 
-    def moveMotorLeft(self, speed):
+    def moveMotorLeft(self, speed): #DEPRECATED - just use writeMotors() function
         self.motor.duty(int(speed))
         self.rev_motor.duty(int(0))
 
-    def homingFunction(self):
+    def homingFunction(self): #DONE
         #print('In Homing Function')
         if self.leftHomed == False or self.resetZero == False:
             #print("Moving left")
@@ -306,7 +306,7 @@ class actuator():
             self.leftHomed = False
             return True
 
-    def moveToPosition(self, xcoord):
+    def moveToPosition(self, xcoord): #DONE
         if self.x_pos > xcoord + self.tol and not self.checkLimLeft():
             self.moveMotorLeft(self.homingSpeed)
             return False
@@ -316,7 +316,7 @@ class actuator():
         else:
             return True
 
-    def manualMovement(self):
+    def manualMovement(self): #DONE
         #print("In manualmovement()")
         x_value = self.xStick.read() - self.centerJoy - 10
         y_value = self.yStick.read() - self.centerJoy - 10
@@ -381,7 +381,7 @@ class actuator():
         self.lastTheta = theta
         return
 
-    def writeMotors(self,PWM):
+    def writeMotors(self,PWM): #DONE
 
         rightHit = self.checkLimRight()
         leftHit = self.checkLimLeft()

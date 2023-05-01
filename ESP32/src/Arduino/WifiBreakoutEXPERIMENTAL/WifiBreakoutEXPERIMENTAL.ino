@@ -8,10 +8,6 @@
 #include <actuator.h>
 #include <esp32.h>
 
-//Actuator setup
-actuator myActuator;
-//Actuator setup over
-
 //state machine setup
 esp32 myESP32;
 //stae nmachine setup over
@@ -20,7 +16,36 @@ esp32 myESP32;
 TaskHandle_t Task1;
 TaskHandle_t Task2;
 SemaphoreHandle_t xMutex = NULL;  // Create a mutex object
-volatile int enc_shared; //Encoder value shared between two cores. Try making not volatile if issue?
+
+
+volatile int x_pos_core1 = 0;
+volatile bool homed_core1 = false;
+volatile bool finished_core1 = false;
+volatile int theta_core1 = 0;
+int x_des_core1;
+int y_des_core1;
+const char* state_core1; 
+bool cancel_core1;
+
+
+volatile int x_pos_core0 = 0;
+volatile bool homed_core0 = false;
+volatile bool finished_core0 = false;
+volatile int theta_core0 = 0;
+int x_des_core0;
+int y_des_core0;
+const char* state_core0; 
+bool cancel_core0;
+
+volatile int x_pos_shared = 0;
+volatile bool homed_shared = false;
+volatile bool finished_shared = false;
+volatile int theta_shared = 0;
+int x_des_shared;
+int y_des_shared;
+const char* state_shared; 
+bool cancel_shared;
+
 #define INCLUDE_vTaskDelete 1 //For delay variable in xSemaphoreTake(Mutex, delay) function
 //Multi core setup over
 
@@ -35,8 +60,6 @@ WiFiClient client;
 
 //Encoder setup
 ESP32Encoder encoder1;
-volatile int enc_core0 = 0; // encoder count on core 0
-volatile int enc_core1 = 0; // encoder count on core 1
 //Encoder setup over
 
 void setup() {
@@ -72,11 +95,25 @@ void setup() {
 //Task1code: reads encoder and sends to main loop() if possible using mutex
 void Task1code( void * pvParameters ){
   for(;;){
-    enc_core0 = encoder1.getCount();
-    Serial.println("Encoder polled");
+    //ESP32 commands
+    myESP32.x_pos = encoder1.getCount(); //Update encoder
+    myESP32.updatePhysicalVals(); //Update other vals
+    myESP32.getstate(); //Update state
+    myESP32.actions(); //Act
+  
     if (xSemaphoreTake(xMutex,0)){
       Serial.println("Mutex acquired core0!");
-      enc_shared = enc_core0;
+      //Values to send
+      x_pos_shared = myESP32.x_pos;
+      homed_shared = myESP32.homed;
+      finished_shared = myESP32.finished;
+      theta_shared = myESP32.theta;
+
+      //Recieve values
+      myESP32.x_des = x_des_shared;
+      myESP32.phone_state = state_shared;
+      myESP32.cancel = cancel_shared;
+
       xSemaphoreGive (xMutex); 
     }
     //Serial.print("Task1 running on core ");
@@ -87,26 +124,26 @@ void Task1code( void * pvParameters ){
 
 void loop() {
   
-  //Send/recieve data
-  send_data(myESP32,client);
-  recieve_data(client);  
-
   //Update encoder value
-  if (xSemaphoreTake (xMutex, portMAX_DELAY)){
+  if (xSemaphoreTake (xMutex, portMAX_DELAY)){ //TRY DELAY 0
     //Serial.println("Mutex acquired core 1");
-    enc_core1 = enc_shared;
-    xSemaphoreGive (xMutex);
-    myActuator.x_pos = enc_core1;
-  }
+    //Get values to send
+    x_pos_core1 = x_pos_shared; 
+    homed_core1 = homed_shared;
+    finished_core1 = finished_shared;
+    theta_core1 = theta_shared;
 
-  //ESP32 commands
-  myESP32.updatePhysicalVals();
-  myESP32.getstate();
-  myESP32.actions();
-  Serial.println(myESP32.state);
-  Serial.println(myESP32.phone_state);
-  Serial.println(myESP32.cancel);
-  Serial.println(myESP32.checkFinished());
+    //Update values to share
+    x_des_shared = x_des_core1;
+    state_shared = state_core1;
+    cancel_shared = cancel_core1;
+
+    xSemaphoreGive (xMutex);
+    
+  }
+  //Send/recieve data
+  send_data(x_pos_core1,homed_core1,finished_core1,theta_core1,client);
+  recieve_data(client);  
 }
 
 //Connect to wifi network
@@ -137,7 +174,7 @@ WiFiClient start_client(){
 }
 
 //Send data over socket
-void send_data(esp32 myESP32, WiFiClient client){
+void send_data(int x_pos,bool homed,bool finished,int theta, WiFiClient client){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& arrToSend = jsonBuffer.createObject();
 
@@ -170,14 +207,10 @@ void recieve_data(WiFiClient client){
   //  return "FAIL";     
   //}
 
-  int x_des = root["x_des"];
-  int y_des = root["y_des"];
-  const char* state = root["state"]; //NO WAY THIS WORKS
-  bool cancel = root["cancel"];
-
-  myESP32.x_des = x_des;
-  myESP32.phone_state = String(state);
-  myESP32.cancel = cancel;
+  x_des_core1 = root["x_des"];
+  //y_des_core1 = root["y_des"];
+  state_core1 = root["state"]; //NO WAY THIS WORKS
+  cancel_core1 = root["cancel"];
 }
 
 

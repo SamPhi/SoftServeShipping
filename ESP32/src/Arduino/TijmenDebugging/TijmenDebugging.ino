@@ -1,28 +1,19 @@
 #include <Arduino.h>
 #include <ESP32Encoder.h>
+#include <actuator.h>
 # define M_PI           3.14159265358979323846  /* pi */
-///REQUIRED ADDITIONAL IMPORTS
 
-/// END IMPORTS
+
+
+//Create actuator
+actuator myActuator;
 
 //Code from other scripts:
 
 ESP32Encoder encoder1;
 int enc_core1;
 
-int LS1=4;
-int LS2=16;
-//END
 
-//MOTOR SETUP
-const int BIN_1 = 25;
-const int BIN_2 = 26;
-//setting PWM properties ----------------------------
-const int freq = 25000;
-const int ledChannel_1 = 1;
-const int ledChannel_2 = 2;
-const int resolution = 8;
-//END MOTOR SETUP
 
 //Physical parameters:
 const float g = 9.81;
@@ -37,16 +28,8 @@ float lastTheta = 0;
 int x=0;
 int PWM= 0;
 
-//Potentiometer code
-const int angleSensor = 32;
-const float center = 1863.5;
-const float oneDegInCounts = 10.93;
 
 
-//Returns theta in degrees - CCW positive, CW negative
-float getTheta(){
-  return (analogRead(angleSensor)-center)/oneDegInCounts;
-}
 
 void setup() {
   //encoder
@@ -55,62 +38,7 @@ void setup() {
   ESP32Encoder::useInternalWeakPullResistors = UP; // Enable the weak pull up resistors
   encoder1.attachHalfQuad(39, 36); // Attache pins for use as encoder pins  M1(36,39)   M2(4,16)   M3(17,21)
   encoder1.setCount(0);  // set starting count value after attaching
-  
-  //Lim switches from other script:
-  pinMode(LS1, INPUT_PULLUP);
-  pinMode(LS2, INPUT_PULLUP);
-  //
 
-  // MOTOR SETUP
-  // configure LED PWM functionalitites
-  ledcSetup(ledChannel_1, freq, resolution);
-  ledcSetup(ledChannel_2, freq, resolution);
-  // attach the channel to the GPIO to be controlled
-  ledcAttachPin(BIN_1, ledChannel_1);
-  ledcAttachPin(BIN_2, ledChannel_2);
-
-  //END MOTOR SETUP
-  pinMode(angleSensor, INPUT);
-  //pinMode(startSensor, INPUT_PULLUP);
-  //pinMode(endSensor, INPUT_PULLUP);
-}
-
-void writeMotors(int PWM){ 
-  //Check PWM Limits
-  if (PWM>1023) {
-    PWM = 1023;
-  }
-  if (PWM<-1023) {
-    PWM = -1023;
-  }
-
-  //Set motor PWM based on sign, and check not hitting relevant limit switch for given direction
-  if ((PWM >= 0) && !checkLimRight()) {
-    ledcWrite(ledChannel_1, LOW);
-    ledcWrite(ledChannel_2, PWM);
-  }
-  else if ((PWM < 0) && !checkLimLeft()){
-    ledcWrite(ledChannel_1, -PWM);
-    ledcWrite(ledChannel_2, LOW);
-  }
-  else {
-    ledcWrite(ledChannel_1, LOW);
-    ledcWrite(ledChannel_2, LOW);
-  }
-}
-
-
-//Code from other scripts:
-bool checkLimLeft() {
-  if (digitalRead(LS1) == LOW) {
-    return true;}
-  else {return false;}
-}
-
-bool checkLimRight() {
-  if (digitalRead(LS2) == LOW) {
-    return true;}
-  else {return false;}
 }
 
 int auto_u_container(float dth,float g,float l,float m1,float m2,float t,float th,int x,int x_des) {
@@ -123,7 +51,7 @@ int auto_u_container(float dth,float g,float l,float m1,float m2,float t,float t
     float t2 = cos(th);
     float t3 = sin(th);
     float t4 = sq(t2);
-    float u = -(l*(m1+m2-m2*t4)*(dth*(-1.0/2.0)-th*3.0e+1+x*(3.0/2.0)-x_des*(3.0/2.0)+((x/10-x_des/10+8.630374447253786*10^(-4))*3.0e+1)/(t-10)+(g*t3*(m1+m2))/(l*(m1+m2*t3^2))+(dth^2*m2*t2*t3*2.0)/(m1*2.0+m2-m2*(t4*2.0-1.0))))/t2;
+    float u = -(l*(m1+m2-m2*t4)*(dth*(-1.0/2.0)-th*3.0e+1+x*(3.0/2.0)-x_des*(3.0/2.0)+((x/10-x_des/10+8.630374447253786*pow(10,-4))*3.0e+1)/(t-10)+(g*t3*(m1+m2))/(l*(m1+m2*sq(t3)))+(sq(dth)*m2*t2*t3*2.0)/(m1*2.0+m2-m2*(t4*2.0-1.0))))/t2;
     return int(u);
 }
 
@@ -134,7 +62,7 @@ void autoMove(int x_des) {
     float mg = massGantry; //Kg
     float mc = massContainer; //Kg
     float t = dt;
-    float th = getTheta()*M_PI/180;
+    float th = myActuator.getTheta()*M_PI/180;
     float th_past = lastTheta;
     float dth = (th_past - th)/dt;
     
@@ -144,7 +72,7 @@ void autoMove(int x_des) {
     PWM = auto_u_container(dth,g,l,mg,mc,t,th,x,x_des);
     
     //Actually write calculated PWMN vals to motor
-    //self.writeMotors(PWM)
+    myActuator.writeMotors(PWM);
 
     //Update past values for next run
     last_x_pos = x;
@@ -152,7 +80,15 @@ void autoMove(int x_des) {
     return;
 }
 
+bool homed = false;
+
 void loop() {
-  x = encoder1.getCount();
-  autoMove(400);
+  if (homed == false){
+    homed = myActuator.homingFunction();
+  }
+  else{
+    x = encoder1.getCount();
+    autoMove(-400);
+    Serial.println(x);
+  }
 }
