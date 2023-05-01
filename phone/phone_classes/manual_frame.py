@@ -40,7 +40,7 @@ class manual_frame(tk.Frame):
 
 
         #Create Swing animation
-        self.swingAnim = swingAnimation.swingAnimation(controller.width)
+        self.swingAnim = swingAnimation.swingAnimation(self,controller.width)
         self.swingAnim.pack(pady=(10,10))
 
 
@@ -55,4 +55,3 @@ class manual_frame(tk.Frame):
         #Update swing animation
         self.swingAnim.drawContainer(self.controller.theta)
         return
-

@@ -14,12 +14,11 @@ import thankyou_frame
 
 #Swing animation class for creating swing animation in manual and auto modes
 class swingAnimation(tk.Canvas):
-    def __init__(self,width):
-        tk.Canvas.__init__(self,width=width,height=width,bg="white")
-
-        self.armLength = 300
-        self.dx = 200
-        self.dy = 200
+    def __init__(self,parent, width):
+        tk.Canvas.__init__(self,parent,width=width,height=width+200,bg="white")
+        self.armLength = 250
+        self.dx = 150
+        self.dy = 150
         self.width = width
 
         #Create stuff for finding lines to draw
@@ -71,6 +70,7 @@ class swingAnimation(tk.Canvas):
         return self.rotateDisplacePoint(self.arm_coords, theta)
 
     def drawContainer(self,theta):
+        ##Draws container
         if not self.line0:
             self.line0 = self.create_line(self.getFinalCoords(theta), fill="red", width=35)
         if not self.line1:
@@ -87,8 +87,10 @@ class swingAnimation(tk.Canvas):
         self.coords(self.line3, self.getPoints(theta)[2])
         self.coords(self.line4, self.getPoints(theta)[3])
 
+
     def show(self):
-        self.pack()
+        self.pack(pady=(10,10))
+        return
 
     def hide(self):
         self.pack_forget()
