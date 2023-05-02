@@ -16,7 +16,7 @@ import timer
 
 def start_server():
     # Create a TCP/IP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) ##should be:socket.SOCK_STREAM for TCP
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) ##should be:socket.SOCK_STREAM for TCP
     # Bind the socket to a specific address and port
     server_address = ('192.168.43.1', 12345) #Should be:'192.168.43.1', 12345 for phone, '1
     print('starting up on {} port {}'.format(*server_address))
