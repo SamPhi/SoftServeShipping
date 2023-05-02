@@ -34,7 +34,7 @@ def send_data(sock, x_des, y_des, state, cancel):
     message = phoneDataArr.encode()
     #print('sending {!r}'.format(message))
     sock.sendall(message)
-    ##sock.sendall("\n".encode())
+    sock.sendall("\n".encode())
 
 def receive_data(sock,game):
     # Receive data
