@@ -18,7 +18,7 @@ def start_server():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Bind the socket to a specific address and port
-    server_address = ('127.0.0.1', 12345) #Should be:'192.168.43.1', 12345 for phone, '1
+    server_address = ('192.168.43.1', 12345) #Should be:'192.168.43.1', 12345 for phone, '1
     print('starting up on {} port {}'.format(*server_address))
     sock.bind(server_address)
     # Listen for incoming connections
