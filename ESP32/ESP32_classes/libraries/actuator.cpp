@@ -157,12 +157,14 @@ bool actuator::autoMove(){
 }
 
 void actuator::callibratePot() {
-  int total;
+  float total;
   for (int i = 0; i < 10000; i++) {
     total += analogRead(angleSensor);
   }
   center = total / 10000;
   return;
+}
+
 }
 
 
