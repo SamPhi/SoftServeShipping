@@ -33,8 +33,8 @@ def send_data(sock, x_des, y_des, state, cancel):
     phoneDataArr = json.dumps({"x_des": x_des, "y_des": y_des, "state": state, "cancel": cancel})
     message = phoneDataArr.encode()
     #print('sending {!r}'.format(message))
-    sock.sendall(message)
-    sock.sendall("\n".encode())
+    sock.sendall(message + "\n".encode())
+    ##sock.sendall("\n".encode())
 
 def receive_data(sock,game):
     # Receive data
