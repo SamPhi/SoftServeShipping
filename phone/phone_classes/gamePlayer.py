@@ -122,10 +122,10 @@ class gamePlayer(tk.Tk):
             if self.homed == True:
                 self.homed = False
             #To run every loop
+            self.x_des = self.frames["select_frame"].xdesEntry.get()
             self.updateMaxTheta() #Update max theta
             if self.state != self.lastState: #To run once when enter state
                 self.runTimer.startTimer() #start timer
-                self.x_des = self.frames["select_frame"].xdesEntry.get()
                 self.lastName = "Automatic"
         elif self.state == "thankyou":
             print("In thank you")
