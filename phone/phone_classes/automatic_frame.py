@@ -9,6 +9,8 @@ import gamePlayer
 import select_frame
 import manual_frame
 import swingAnimation
+from PIL import ImageTk
+from PIL import Image
 
 
 class automatic_frame(tk.Frame):
@@ -38,7 +40,12 @@ class automatic_frame(tk.Frame):
                             command=lambda: [controller.buttonState("thankyou"),controller.setCancelTrue()])
         self.button1.pack()
 
-        #TODO Add input for x_des, y_des
+        # Create an object of tkinter ImageTk
+        self.img = ImageTk.PhotoImage(Image.open("clear_logo.png").resize((500,500)))
+
+        # Create a Label Widget to display the text or Image
+        self.imglabel = tk.Label(self, image=self.img)
+        self.imglabel.pack(pady=50)
 
     def update(self, time):
         # update label with time. Time is a string in format M:SS
