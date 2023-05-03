@@ -102,6 +102,7 @@ class gamePlayer(tk.Tk):
         if self.state == "select":
             if self.finished == True:
                 self.finished = False
+            self.x_des = self.frames["select_frame"].xdesEntry.get()
             #Tasks to run once when enter state:
             if self.state != self.lastState:
                 if not self.cancel:
@@ -122,7 +123,6 @@ class gamePlayer(tk.Tk):
             if self.homed == True:
                 self.homed = False
             #To run every loop
-            self.x_des = self.frames["select_frame"].xdesEntry.get()
             self.updateMaxTheta() #Update max theta
             if self.state != self.lastState: #To run once when enter state
                 self.runTimer.startTimer() #start timer
