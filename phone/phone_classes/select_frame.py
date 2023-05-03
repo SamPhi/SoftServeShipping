@@ -45,7 +45,7 @@ class select_frame(tk.Frame):
         #Text entry for auto mode
         self.xdesEntry = tk.Entry(self, font=controller.title_2_font)
         self.xdesEntry.pack()
-        self.xdesEntry.insert(10, 0.75)
+        self.xdesEntry.insert(10, 0.77)
         #Button for auto mode
         self.button2 = tk.Button(self, text="Automatic Mode", height = 3, width = 20, font=controller.title_2_font, command=lambda: controller.buttonState("automatic"))
         self.button2.pack(pady=10)
