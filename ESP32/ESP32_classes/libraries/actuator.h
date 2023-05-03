@@ -26,6 +26,8 @@ public: //Defines variables/functions that a sketch can use
   bool autoMove();
   bool checkLimRight(); //Internal function to check if right lim switch hit, returns true if so
   void callibratePot();
+  //AutoMove
+  void autoMove(float x_des); // Auto moves
 
 
 
@@ -62,9 +64,27 @@ private: //Defines variables/functions only accessbile to actuator class
   const float oneDegInCounts = 10.93;
 
   //for debounce
-  const int debounceTime = 10;
+  const int debounceTime = 4;
   volatile int debounceCounter=0;
-
+  //AutoMove
+  float medianArray(float array[]); //Returns median of array
+  void shiftArray(float array[], float newValue);
+  const float kpt = 1; //Controller P constant for theta
+  const float kdt = 0.01; //Controller D constant for theta
+  const float kpx = 40; //Controller P constant for x
+  const float kdx = 0.01; //Controller D constant for x
+  const float dt = 4.16666667e-9; //time step set by machine clock speed
+  float x_past = 0;
+  float th_past = 0;
+  float x=0;
+  float PWM= 0;
+  float scalePWM = -100;
+  float totalEncoder = 5130;
+  float totalLength = 0.91; //m
+  const int ARRAY_SIZE = 5;
+  float th_hist[5] = {0};
+  float PWM_hist[5] = {0};
+  int n = 0; //Counter for tracking where to insert new value
 
 
 

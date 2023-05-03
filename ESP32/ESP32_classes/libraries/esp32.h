@@ -16,7 +16,7 @@ public: //Defines variables/functions that a sketch can use
 
   //Received from phone
   String phone_state;
-  int x_des;
+  float x_des;
   bool cancel;
   //int y_des =0;
 

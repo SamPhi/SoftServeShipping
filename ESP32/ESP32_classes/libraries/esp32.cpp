@@ -70,7 +70,9 @@ void esp32::actions() {
     if (homed == true) {
       homed = false;
     }
-    myActuator.autoMove();
+    if(x_des != 0){
+    myActuator.autoMove(x_des);
+    }
   }
 
   else if (state == "finished") {

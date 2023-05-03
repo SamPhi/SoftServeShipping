@@ -45,18 +45,9 @@ bool actuator::checkStart() {
 
 //Returns true if right hall effect sensor triggered, otherwise false
 bool actuator::checkEnd() {
-  if ((digitalRead(endSensor) == LOW) && (debounceCounter > debounceTime)) {
-    debounceCounter = 0;
-    return true;
-  }
-  else if ((digitalRead(endSensor) == LOW) && (debounceCounter <= debounceTime)) {
-    debounceCounter += 1;
-    return false;
-  }
-  else {
-    debounceCounter = 0;
-    return false;
-  }
+  if (digitalRead(endSensor) == LOW) {
+    return true;}
+  else {return false;}
 }
 
 //Drives motors - checks PWM in operating range and for limit switch hits
@@ -115,7 +106,7 @@ bool actuator::homingFunction(){
   }
 
   else if ((rightHomed) && (leftHomed) && (resetZero) && (!moveToStart)) {
-    int startingPoint = farRight-int((abs(farRight) + abs(zeroPos))/8);
+    int startingPoint = int((farRight + abs(zeroPos))/8 + zeroPos);
     moveToStart = moveToPosition(startingPoint);
     return false;
   }
@@ -132,6 +123,9 @@ bool actuator::homingFunction(){
   //  return false;
   //}
 }
+
+
+
 
 bool actuator::moveToPosition(int xcoord){
   if(x_pos > (xcoord+tol)){
@@ -156,76 +150,5 @@ bool actuator::autoMove(){
     return false;
 }
 
-void actuator::callibratePot() {
-  float total;
-  for (int i = 0; i < 10000; i++) {
-    total += analogRead(angleSensor);
-  }
-  center = total / 10000;
-  return;
-}
-
-void actuator::shiftArray(float array[], float newValue){
-  if(n>=ARRAY_SIZE){
-    n = 0;
-  }
-  array[n] =  newValue;
-  n+=1;
-  return;
-}
-
-float actuator::medianArray(float array[]) {
-  // Copy array to a temporary array
-  float tempArray[ARRAY_SIZE];
-  std::copy(array, array + ARRAY_SIZE, tempArray);
-
-  // Sort the temporary array
-  std::sort(tempArray, tempArray + ARRAY_SIZE);
-
-  // Compute the median of the array
-  if (ARRAY_SIZE % 2 == 0) {
-    // If the array size is even, compute the average of the middle two elements
-    return (tempArray[ARRAY_SIZE / 2] + tempArray[ARRAY_SIZE / 2 - 1]) / 2.0;
-  } else {
-    // If the array size is odd, return the middle element
-    return tempArray[ARRAY_SIZE / 2];
-  }
-}
-
-void actuator::autoMove(float x_des) {
-    x = -x_pos; //CHANGE TO ENC_CORE_N
-    float th = (getTheta())*M_PI/180;
-    x = totalLength * x/totalEncoder;
-    //take last 5 average values for theta
-    shiftArray(th_hist, th);
-    th = -1*medianArray(th_hist);
-
-    float dth = (th-th_past)/dt;
-    float dx =  (x - x_past)/dt;
-    dth = dth/10000000;
-    dx = dx/10000000;
-
-    //Error in X
-    float e = x_des-x;
-    //Theta des
-    float th_des = -kpx*(e) - kdx*(dx);
-    //Error in theta
-    float eth = th*180/M_PI - th_des;
-    //Calculate PWM value
-    float u = kpt*eth + kdt*dth; //ANGLE STABILIZNG
-    if(abs(e) < 0.02 && abs(eth) < 0.6){
-        u= 0;
-    }
-
-    PWM = u*scalePWM;
-    shiftArray(PWM_hist, PWM);
-    PWM = medianArray(PWM_hist);
-    writeMotors(PWM);
-    //Update past values for next run
-    th_past = th;
-    x_past = x;
-    return;
-
-}
 
 
