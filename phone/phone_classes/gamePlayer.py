@@ -104,7 +104,7 @@ class gamePlayer(tk.Tk):
                 self.finished = False
             self.x_des = (self.frames["select_frame"].xdesEntry.get())
             try:
-                self.x_des = float(self.x_des)
+                self.x_des = float(self.x_des)/1000
             except ValueError:
                 self.x_des = 0
             #Tasks to run once when enter state:
