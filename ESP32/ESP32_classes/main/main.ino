@@ -13,11 +13,10 @@ esp32 myESP32;
 //stae nmachine setup over
 
 //Multi core setup
-TaskHandle_t Task1;
+TaskHandle_t Task1; 
 TaskHandle_t Task2;
 SemaphoreHandle_t xMutex = NULL;  // Create a mutex object
-
-
+//Shared variables, core 1 version
 volatile int x_pos_core1 = 0;
 volatile bool homed_core1 = false;
 volatile bool finished_core1 = false;
@@ -26,8 +25,7 @@ float x_des_core1;
 int y_des_core1;
 const char* state_core1; 
 bool cancel_core1;
-
-
+//Shared variables, core0 version
 volatile int x_pos_core0 = 0;
 volatile bool homed_core0 = false;
 volatile bool finished_core0 = false;
@@ -36,7 +34,7 @@ float x_des_core0;
 int y_des_core0;
 const char* state_core0; 
 bool cancel_core0;
-
+//Shared variables, shared version
 volatile int x_pos_shared = 0;
 volatile bool homed_shared = false;
 volatile bool finished_shared = false;
@@ -45,14 +43,12 @@ float x_des_shared;
 int y_des_shared;
 const char* state_shared; 
 bool cancel_shared;
-
 #define INCLUDE_vTaskDelete 1 //For delay variable in xSemaphoreTake(Mutex, delay) function
 //Multi core setup over
 
 //Wifi setup
 const char* ssid = "SoftServeShipping";
 const char* password = "SoftServeShipping";
-
 const uint16_t port = 12345;
 const char * host = "192.168.43.1";
 WiFiClient client;
@@ -90,9 +86,6 @@ void setup() {
                     &Task1,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */                  
   delay(500); 
-
-  //create a task that will be executed in the Task2code() function, with priority 1 and executed on core 1
-
 }
 
 //Task1code: reads encoder and sends to main loop() if possible using mutex
