@@ -102,7 +102,7 @@ class gamePlayer(tk.Tk):
         if self.state == "select":
             if self.finished == True:
                 self.finished = False
-            self.x_des = self.frames["select_frame"].xdesEntry.get()
+            self.x_des = (self.frames["select_frame"].xdesEntry.get())/1000
             #Tasks to run once when enter state:
             if self.state != self.lastState:
                 if not self.cancel:
