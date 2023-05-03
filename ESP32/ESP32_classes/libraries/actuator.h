@@ -69,9 +69,9 @@ private: //Defines variables/functions only accessbile to actuator class
   //AutoMove
   float medianArray(float array[]); //Returns median of array
   void shiftArray(float array[], float newValue);
-  const float kpt = 1; //Controller P constant for theta
+  const float kpt = 1; //Controller P constant for theta //1 best
   const float kdt = 0.01; //Controller D constant for theta
-  const float kpx = 40; //Controller P constant for x
+  const float kpx = 60; //Controller P constant for x //40 best
   const float kdx = 0.01; //Controller D constant for x
   const float dt = 4.16666667e-9; //time step set by machine clock speed
   float x_past = 0;

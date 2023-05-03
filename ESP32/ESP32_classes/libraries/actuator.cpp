@@ -106,7 +106,7 @@ bool actuator::homingFunction(){
     }
     return false;
   }
-  
+
   else if ((leftHomed) && (!rightHomed) && (resetZero) && (!moveToStart)) {
     writeMotors(homingSpeed);
     rightHomed = checkLimRight();
@@ -115,7 +115,7 @@ bool actuator::homingFunction(){
   }
 
   else if ((rightHomed) && (leftHomed) && (resetZero) && (!moveToStart)) {
-    int startingPoint = farRight-int((abs(farRight) + abs(zeroPos))/8);
+    int startingPoint = farRight-int((abs(farRight) + abs(zeroPos))/11);
     moveToStart = moveToPosition(startingPoint);
     return false;
   }
