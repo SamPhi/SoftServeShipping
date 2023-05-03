@@ -103,10 +103,6 @@ class gamePlayer(tk.Tk):
             if self.finished == True:
                 self.finished = False
             self.x_des = (self.frames["select_frame"].xdesEntry.get())
-            try:
-                self.x_des = float(self.x_des)
-            except ValueError:
-                self.x_des = 0
             #Tasks to run once when enter state:
             if self.state != self.lastState:
                 if not self.cancel:
