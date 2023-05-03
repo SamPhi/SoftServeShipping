@@ -64,7 +64,7 @@ private: //Defines variables/functions only accessbile to actuator class
   const float oneDegInCounts = 10.93;
 
   //for debounce
-  const int debounceTime = 4;
+  const int debounceTime = 1;
   volatile int debounceCounter=0;
   //AutoMove
   float medianArray(float array[]); //Returns median of array
