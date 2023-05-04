@@ -645,8 +645,5 @@ In finished mode, the ESP32 will reset the finished flag and begin a homing sequ
 - float getTheta() (reads potentiometer for swing angle)
 - void callibratePot() (callibrates potentiometer to set 0, called once during setup)
 
-@startuml
-a->b:c
-@enduml
     
     
