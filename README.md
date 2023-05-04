@@ -155,7 +155,9 @@ MU is free
 C1 is RunGame
 @+5
 @enduml
-```
+-->
+
+![](firstDiagram.svg)
 
 
 ```plantuml
