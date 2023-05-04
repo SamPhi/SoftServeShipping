@@ -649,7 +649,7 @@ In finished mode, the ESP32 will reset the finished flag and begin a homing sequ
 - void callibratePot() (callibrates potentiometer to set 0, called once during setup)
 
     
-    <!--
+<!--
 @startuml firstDiagram
 
 Alice -> Bob: Hello
