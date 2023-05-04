@@ -644,4 +644,3 @@ In finished mode, the ESP32 will reset the finished flag and begin a homing sequ
 - bool moveToPosition(int xcoord) (Moves to xcoord using basic bang bang controller, ignoring angle of swing)
 - float getTheta() (reads potentiometer for swing angle)
 - void callibratePot() (callibrates potentiometer to set 0, called once during setup)
-
