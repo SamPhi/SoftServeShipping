@@ -75,8 +75,8 @@ stateDiagram
 - The diagram below shows a visualition of this process flow
 
 
-<!--
-@startuml diagram
+```plantuml
+@startuml
 
 Title Timing diagram of core communication 
 
@@ -155,9 +155,7 @@ MU is free
 C1 is RunGame
 @+5
 @enduml
--->
-
-![](firstDiagram.svg)
+```
 
 
 ```plantuml
@@ -648,16 +646,5 @@ In finished mode, the ESP32 will reset the finished flag and begin a homing sequ
 - float getTheta() (reads potentiometer for swing angle)
 - void callibratePot() (callibrates potentiometer to set 0, called once during setup)
 
-    
-<!--
-@startuml firstDiagram
-
-Alice -> Bob: Hello
-Bob -> Alice: Hi!
-	
-@enduml
--->
-
-![](firstDiagram.svg)
     
     
