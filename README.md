@@ -75,7 +75,7 @@ stateDiagram
 - The diagram below shows a visualition of this process flow
 
 
-```plantuml
+<!--
 @startuml diagram
 
 Title Timing diagram of core communication 
@@ -235,7 +235,7 @@ C1 is RWDR
 C1 is giveL
 @enduml
 
-```
+-->
 
 - The above diagram shows the interaction between the two cores and the Mutex
 - There are 8 values shared between the two cores (int x_pos, bool homed,bool finished, int theta, int x_des, int y_des, const char* state, bool cancel)
