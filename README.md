@@ -76,7 +76,7 @@ stateDiagram
 
 
 ```plantuml
-@startuml
+@startuml diagram
 
 Title Timing diagram of core communication 
 
